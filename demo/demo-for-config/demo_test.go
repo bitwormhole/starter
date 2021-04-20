@@ -5,6 +5,6 @@ import (
 )
 
 func TestDemo(t *testing.T) {
-	code := Demo()
+	code := Demo(nil, "")
 	t.Logf("exit with code: %d", code)
 }

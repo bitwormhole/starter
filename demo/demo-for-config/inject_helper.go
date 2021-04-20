@@ -1,6 +1,9 @@
 package config
 
-import "github.com/bitwormhole/starter/application"
+import (
+	"github.com/bitwormhole/starter/application"
+	"github.com/bitwormhole/starter/demo/demo-for-config/components"
+)
 
 type injectHelper struct {
 	context application.RuntimeContext
@@ -18,19 +21,19 @@ func (inst *injectHelper) handleError(err error) {
 	inst.err = err
 }
 
-func (inst *injectHelper) getCar(name string) *Car {
+func (inst *injectHelper) getCar(name string) *components.Car {
 	obj, err := inst.context.GetComponents().GetComponent(name)
 	if err == nil {
-		return obj.(*Car)
+		return obj.(*components.Car)
 	}
 	inst.handleError(err)
 	return nil
 }
 
-func (inst *injectHelper) getEngine(name string) *Engine {
+func (inst *injectHelper) getEngine(name string) *components.Engine {
 	obj, err := inst.context.GetComponents().GetComponent(name)
 	if err == nil {
-		return obj.(*Engine)
+		return obj.(*components.Engine)
 	}
 	inst.handleError(err)
 	return nil

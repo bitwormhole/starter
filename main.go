@@ -2,11 +2,10 @@ package main
 
 import (
 	"embed"
-	"fmt"
 	"os"
 
-	"github.com/bitwormhole/starter/application"
-	"github.com/bitwormhole/starter/application/config"
+	"github.com/bitwormhole/starter/docs/help"
+	"github.com/bitwormhole/starter/tools/configen"
 
 	demo "github.com/bitwormhole/starter/demo/demo-for-config"
 )
@@ -16,41 +15,19 @@ var resources embed.FS
 
 func tryMain() error {
 
-	config := &config.AppConfig{}
-	// fsys := fs.Default()
-	// roots := fsys.Roots()
+	action := ""
 	args := os.Args
-
-	config.SetResources(&resources, "src/main/resources")
-	demo.Config(config)
-
-	context, err := application.Run(config, args)
-	if err != nil {
-		return err
+	if len(args) > 1 {
+		action = args[1]
 	}
 
-	context.GetComponents().GetComponent("seby")
-	context.GetComponents().GetComponent("car-x")
-	context.GetComponents().GetComponent("car-y")
-	context.GetComponents().GetComponent("car-z")
-
-	fmt.Println("components.names(include aliases):")
-	namelist := context.GetComponents().GetComponentNameList(true)
-	for index := range namelist {
-		fmt.Println("    " + namelist[index])
+	if action == "demo" {
+		return demo.Demo(&resources, "src/main/resources")
+	} else if action == "configen" {
+		return configen.Main(args)
+	} else {
+		return help.PrintHelpInfo()
 	}
-
-	fmt.Println("components.names(without aliases):")
-	namelist = context.GetComponents().GetComponentNameList(false)
-	for index := range namelist {
-		fmt.Println("    " + namelist[index])
-	}
-
-	code := application.Exit(context)
-	fmt.Println("exited, code=", code)
-	// fmt.Println("  file.roots=", roots)
-
-	return nil
 }
 
 func main() {

@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/application/config"
+	"github.com/bitwormhole/starter/demo/demo-for-config/components"
 	"github.com/bitwormhole/starter/lang"
 )
 
@@ -17,20 +18,20 @@ func Config(cfg application.ConfigBuilder) {
 		OnInject: func(obj lang.Object, context application.RuntimeContext) error {
 
 			helper := &injectHelper{context: context}
-			inst := obj.(*Driver)
+			inst := obj.(*components.Driver)
 
-			inst.name = "seby"
-			inst.car = helper.getCar("car-y")
-			inst.birthday = "1999-09-10"
-			inst.sex = "female"
+			inst.Name = "seby"
+			inst.Car = helper.getCar("car-y")
+			inst.Birthday = "1999-09-10"
+			inst.Sex = "female"
 
-			inst.car.driver = inst
+			inst.Car.Driver = inst
 
 			return helper.err
 		},
 
 		OnNew: func() lang.Object {
-			return &Driver{}
+			return &components.Driver{}
 		},
 	})
 
@@ -40,27 +41,27 @@ func Config(cfg application.ConfigBuilder) {
 		Scope: application.ScopePrototype,
 
 		OnNew: func() lang.Object {
-			return &Car{}
+			return &components.Car{}
 		},
 
 		OnInit: func(obj lang.Object) error {
-			car := obj.(*Car)
-			return car.start()
+			car := obj.(*components.Car)
+			return car.Start()
 		},
 
 		OnDestroy: func(obj lang.Object) error {
-			car := obj.(*Car)
-			return car.stop()
+			car := obj.(*components.Car)
+			return car.Stop()
 		},
 
 		OnInject: func(obj lang.Object, context application.RuntimeContext) error {
 
-			car := obj.(*Car)
+			car := obj.(*components.Car)
 			helper := &injectHelper{context: context}
 
-			car.context = context
-			car.engine = nil
-			car.model = "X"
+			car.Context = context
+			car.Engine = nil
+			car.Model = "X"
 
 			return helper.err
 		},
@@ -72,28 +73,28 @@ func Config(cfg application.ConfigBuilder) {
 		Scope: application.ScopePrototype,
 
 		OnNew: func() lang.Object {
-			return &Car{}
+			return &components.Car{}
 		},
 
 		OnInit: func(obj lang.Object) error {
-			car := obj.(*Car)
-			return car.start()
+			car := obj.(*components.Car)
+			return car.Start()
 		},
 
 		OnDestroy: func(obj lang.Object) error {
-			car := obj.(*Car)
-			return car.stop()
+			car := obj.(*components.Car)
+			return car.Stop()
 		},
 
 		OnInject: func(obj lang.Object, context application.RuntimeContext) error {
 
 			helper := &injectHelper{context: context}
-			car := obj.(*Car)
+			car := obj.(*components.Car)
 
-			car.context = context
-			car.engine = helper.getEngine("car-y-engine")
-			car.model = "Y"
-			car.id = "GC17258"
+			car.Context = context
+			car.Engine = helper.getEngine("car-y-engine")
+			car.Model = "Y"
+			car.Id = "GC17258"
 
 			return helper.err
 		},
@@ -105,26 +106,26 @@ func Config(cfg application.ConfigBuilder) {
 		Scope: application.ScopePrototype,
 
 		OnNew: func() lang.Object {
-			return &Engine{}
+			return &components.Engine{}
 		},
 
 		OnInit: func(obj lang.Object) error {
-			engine := obj.(*Engine)
-			return engine.start()
+			engine := obj.(*components.Engine)
+			return engine.Start()
 		},
 
 		OnDestroy: func(obj lang.Object) error {
-			engine := obj.(*Engine)
-			return engine.stop()
+			engine := obj.(*components.Engine)
+			return engine.Stop()
 		},
 
 		OnInject: func(obj lang.Object, context application.RuntimeContext) error {
 
 			helper := &injectHelper{context: context}
-			engine := obj.(*Engine)
+			engine := obj.(*components.Engine)
 
-			engine.owner = helper.getCar("car-y")
-			engine.name = "car-y-engine"
+			engine.Owner = helper.getCar("car-y")
+			engine.Name = "car-y-engine"
 
 			return helper.err
 		},
