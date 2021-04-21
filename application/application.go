@@ -10,24 +10,22 @@ func Run(config Configuration, args []string) (RuntimeContext, error) {
 }
 
 // Exit 函数用于退出应用
-func Exit(context RuntimeContext) int {
+func Exit(context RuntimeContext) (int, error) {
 
 	exitcodegen := tryGetExitCodeGenerator(context)
-	errList := context.GetReleasePool().Release()
+	// errHandler := context.GetErrorHandler()
 
-	if errList != nil {
-		errHandler := context.GetErrorHandler()
-		for index := range errList {
-			err := errList[index]
-			errHandler.OnError(err)
-		}
+	err := context.GetReleasePool().Release()
+	if err != nil {
+		return 0, err
 	}
 
-	if exitcodegen != nil {
-		return exitcodegen.GetExitCode()
+	if exitcodegen == nil {
+		return 0, nil
 	}
 
-	return 0
+	code := exitcodegen.GetExitCode()
+	return code, nil
 }
 
 func tryGetExitCodeGenerator(context RuntimeContext) ExitCodeGenerator {

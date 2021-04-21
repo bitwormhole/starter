@@ -12,18 +12,15 @@ import (
 
 func Demo(fs *embed.FS, prefix string) error {
 
-	config := &config.AppConfig{}
-	config.SetResources(fs, prefix)
-
-	// Config(config)
+	config := config.Builder(fs, prefix)
 	conf.DefaultConfig(config)
 
-	context, err := application.Run(config, os.Args)
+	context, err := application.Run(config.Create(), os.Args)
 	if err != nil {
 		panic(err)
 	}
 
-	code := application.Exit(context)
+	code, err := application.Exit(context)
 	fmt.Println("exit.code=", code)
-	return nil
+	return err
 }

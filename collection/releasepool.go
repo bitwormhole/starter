@@ -5,11 +5,11 @@ import (
 )
 
 type ReleasePool interface {
-	Release() []error
+	Release() error
 	Push(target lang.Disposable)
 }
 
-func Release(pool ReleasePool) []error {
+func Release(pool ReleasePool) error {
 	if pool == nil {
 		return nil
 	}

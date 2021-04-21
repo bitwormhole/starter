@@ -9,6 +9,8 @@ type ContextGetter interface {
 
 	GetProperty(name string) string
 	GetPropertySafely(name string, _default string) string
+	GetPropertyString(name string, _default string) string
+	GetPropertyInt(name string, _default int) int
 
 	GetComponent(name string) lang.Object
 	GetComponentByClass(classSelector string) lang.Object

@@ -3,6 +3,7 @@ package runtime
 import (
 	"errors"
 	"fmt"
+	"log"
 	"sort"
 	"strings"
 
@@ -56,7 +57,8 @@ func (inst *RuntimeContextLoader) Load(config application.Configuration, args []
 		return nil
 
 	}).Try(func() error {
-		return inst.logDebugInfo()
+		// return inst.logDebugInfo()
+		return nil
 	})
 
 	err := tc.Result()
@@ -123,10 +125,11 @@ func (inst *RuntimeContextLoader) loadPropertiesInRes1() error {
 }
 
 func (inst *RuntimeContextLoader) loadPropertiesInRes2() error {
-	key := "bitwormhole.profiles.active"
+	key := "application.profiles.active"
 	properties := inst.context.GetProperties()
 	profile := properties.GetProperty(key, "default")
 	name := "/application-" + profile + ".properties"
+	log.Println(key+":", profile)
 	return inst.loadPropertiesInRes(name)
 }
 

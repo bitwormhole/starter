@@ -31,6 +31,11 @@ func (inst *AppConfig) GetComponents() []application.ComponentInfo {
 	return inst.getComList(true)
 }
 
+// Create 用于创建配置
+func (inst *AppConfig) Create() application.Configuration {
+	return inst
+}
+
 // AddComponent 注册一个组件
 func (inst *AppConfig) AddComponent(info application.ComponentInfo) {
 	list := inst.getComList(true)
@@ -48,16 +53,33 @@ func (inst *AppConfig) GetBuilder() application.ConfigBuilder {
 }
 
 // SetResources 用于配置上下文的资源文件夹
-func (inst *AppConfig) SetResources(fs *embed.FS, prefix string) {
+func (inst *AppConfig) SetResFS(fs *embed.FS, prefix string) {
 	inst.resources = &simpleEmbedResFS{
 		fs:     fs,
 		prefix: prefix,
 	}
 }
 
+func (inst *AppConfig) SetResources(res collection.Resources) {
+	inst.resources = res
+}
+
 // GetResources 用于获取上下文的资源文件夹
 func (inst *AppConfig) GetResources() collection.Resources {
 	return inst.resources
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Builder
+
+func NewBuilderFS(fs *embed.FS, prefix string) application.ConfigBuilder {
+	cfg := &AppConfig{}
+	cfg.SetResFS(fs, prefix)
+	return cfg
+}
+
+func NewBuilder() application.ConfigBuilder {
+	return &AppConfig{}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

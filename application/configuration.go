@@ -4,7 +4,6 @@ import "github.com/bitwormhole/starter/collection"
 
 // Configuration 表示应用程序配置
 type Configuration interface {
-	GetBuilder() ConfigBuilder
 	GetLoader() ContextLoader
 	GetComponents() []ComponentInfo
 	GetResources() collection.Resources
@@ -18,4 +17,6 @@ type ContextLoader interface {
 // ConfigBuilder 表示应用程序配置
 type ConfigBuilder interface {
 	AddComponent(info ComponentInfo)
+	SetResources(res collection.Resources)
+	Create() Configuration
 }
