@@ -7,6 +7,7 @@ type Configuration interface {
 	GetLoader() ContextLoader
 	GetComponents() []ComponentInfo
 	GetResources() collection.Resources
+	GetEnvironment() collection.Environment
 }
 
 //  ContextLoader 用于加载进程上下文

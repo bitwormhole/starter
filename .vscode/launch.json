@@ -14,22 +14,22 @@
                 "PWD": "D:\\home\\xukun\\git\\wormhole2020projects\\modules\\starter\\demo\\demo-for-config\\conf"
             },
             "args": [
-                "configen",
+                "configen", "--application.profiles.active.disable"
             ]
         },
         {
-            "name": "main_demo",
+            "name": "main_gin_demo",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}",
             "env": {},
             "args": [
-                "demo",
+                "demo4gin",
                 "",
                 "configen|demo",
                 "b",
-                "--application.profiles.active=bilibili",
+                "--application.profiles.active=demo4gin",
                 "--c=789"
             ]
         }

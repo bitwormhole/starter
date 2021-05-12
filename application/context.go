@@ -33,7 +33,6 @@ type RuntimeContext interface {
 	// helper
 	SetErrorHandler(h lang.ErrorHandler)
 	GetErrorHandler() lang.ErrorHandler
-	NewGetter(ec lang.ErrorCollector) ContextGetter
 	NewChild() RuntimeContext
 	OpenCreationContext(scope ComponentScope) CreationContext
 }

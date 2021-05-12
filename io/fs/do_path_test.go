@@ -289,7 +289,7 @@ func TestPathDelete(t *testing.T) {
 func TestPathGetNameList(t *testing.T) {
 
 	dir := prepareDirForTest(t)
-	list := dir.GetNameList()
+	list := dir.ListNames()
 
 	for index := range list {
 		item := list[index]
@@ -301,7 +301,7 @@ func TestPathGetNameList(t *testing.T) {
 func TestPathGetPathList(t *testing.T) {
 
 	dir := prepareDirForTest(t)
-	list := dir.GetPathList()
+	list := dir.ListPaths()
 
 	for index := range list {
 		item := list[index]
@@ -313,7 +313,7 @@ func TestPathGetPathList(t *testing.T) {
 func TestPathGetItemList(t *testing.T) {
 
 	dir := prepareDirForTest(t)
-	list := dir.GetItemList()
+	list := dir.ListItems()
 
 	for index := range list {
 		item := list[index]

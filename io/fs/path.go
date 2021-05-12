@@ -51,9 +51,9 @@ type Path interface {
 	Mkdir() error
 	Mkdirs() error
 
-	GetNameList() []string // 返回短文件名
-	GetPathList() []string // 返回完整路径名
-	GetItemList() []Path
+	ListNames() []string // 返回短文件名
+	ListPaths() []string // 返回完整路径名
+	ListItems() []Path
 
 	GetChild(name string) Path
 	GetHref(name string) Path

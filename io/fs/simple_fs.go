@@ -192,7 +192,7 @@ func (inst *innerPath) FileSystem() FileSystem {
 	return inst.core.fs
 }
 
-func (inst *innerPath) GetNameList() []string {
+func (inst *innerPath) ListNames() []string {
 	file, err := os.Open(inst.path)
 	if err != nil {
 		return []string{}
@@ -206,8 +206,8 @@ func (inst *innerPath) GetNameList() []string {
 	return names
 }
 
-func (inst *innerPath) GetPathList() []string {
-	names := inst.GetNameList()
+func (inst *innerPath) ListPaths() []string {
+	names := inst.ListNames()
 	paths := make([]string, len(names))
 	for index := range names {
 		name := names[index]
@@ -216,8 +216,8 @@ func (inst *innerPath) GetPathList() []string {
 	return paths
 }
 
-func (inst *innerPath) GetItemList() []Path {
-	names := inst.GetNameList()
+func (inst *innerPath) ListItems() []Path {
+	names := inst.ListNames()
 	paths := make([]Path, len(names))
 	for index := range names {
 		name := names[index]

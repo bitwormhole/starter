@@ -53,13 +53,6 @@ func (inst *creationContextFacade) GetComponents() application.Components {
 	return inst.core.components
 }
 
-func (inst *creationContextFacade) NewGetter(ec lang.ErrorCollector) application.ContextGetter {
-	ctx := inst.core.proxy
-	getter := &innerContextGetter{}
-	getter.init(ctx, ec)
-	return getter
-}
-
 func (inst *creationContextFacade) GetReleasePool() collection.ReleasePool {
 	return inst.core.pool
 }

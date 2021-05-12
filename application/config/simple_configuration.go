@@ -36,6 +36,11 @@ func (inst *AppConfig) Create() application.Configuration {
 	return inst
 }
 
+// GetEnvironment 用于env
+func (inst *AppConfig) GetEnvironment() collection.Environment {
+	return nil
+}
+
 // AddComponent 注册一个组件
 func (inst *AppConfig) AddComponent(info application.ComponentInfo) {
 	list := inst.getComList(true)

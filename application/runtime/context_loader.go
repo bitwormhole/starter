@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"sort"
 	"strings"
 
@@ -37,6 +38,9 @@ func (inst *RuntimeContextLoader) Load(config application.Configuration, args []
 
 	}).Try(func() error {
 		return inst.loadArguments()
+
+	}).Try(func() error {
+		return inst.loadEnv()
 
 	}).Try(func() error {
 		return inst.loadPropertiesInRes1()
@@ -76,6 +80,29 @@ func (inst *RuntimeContextLoader) loadArguments() error {
 		return nil
 	}
 	dst.Import(src)
+	return nil
+}
+
+func (inst *RuntimeContextLoader) loadEnv() error {
+	src := inst.config.GetEnvironment()
+	dst := inst.context.GetEnvironment()
+	table := make(map[string]string)
+	if src != nil {
+		table = src.Export(table)
+	} else {
+		array := os.Environ()
+		for index := range array {
+			item := array[index]
+			idx := strings.Index(item, "=")
+			if idx < 0 {
+				continue
+			}
+			key := strings.TrimSpace(item[0:idx])
+			val := strings.TrimSpace(item[idx+1:])
+			table[key] = val
+		}
+	}
+	dst.Import(table)
 	return nil
 }
 

@@ -73,10 +73,6 @@ func (inst *contextProxy) NewChild() application.RuntimeContext {
 	return inst.current.NewChild()
 }
 
-func (inst *contextProxy) NewGetter(ec lang.ErrorCollector) application.ContextGetter {
-	return inst.current.NewGetter(ec)
-}
-
 func (inst *contextProxy) GetErrorHandler() lang.ErrorHandler {
 	return inst.current.GetErrorHandler()
 }

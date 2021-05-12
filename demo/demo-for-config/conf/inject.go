@@ -7,7 +7,15 @@ import (
 
 // func DefaultConfig(cfg application.ConfigBuilder) {}
 
+/****
+word
+*/
+
 func injectCar1(t *components.Car, context application.RuntimeContext) error {
+
+	/****
+	  hi
+	*/
 
 	// [component]
 	// id=
@@ -65,18 +73,18 @@ func injectDriver(t *components.Driver, context application.RuntimeContext) erro
 	return nil
 }
 
-type injectDriver2dep interface {
-	getCar(sel string) *components.Car
+////////////////////////////////////////////////////////////////////////////////
+
+type injectDriver2 struct {
+	t    *components.Driver `tag:"target" class:"driver"`
+	car1 *components.Car    `tag:"var" value:"#car1"`
+	car2 *components.Car    `tag:"var" value:"#car1"`
 }
 
-func injectDriver2(t *components.Driver, dep injectDriver2dep) error {
+func (inst *injectDriver2) inject() error {
 
-	// [component]
-	// class=driver
-
-	car1 := dep.getCar("#car1")
-	car2 := dep.getCar("#car2")
-	list := []*components.Car{car1, car2}
+	t := inst.t
+	list := []*components.Car{inst.car1, inst.car2}
 
 	t.MyCars = list
 	t.Name = "seby"
@@ -84,14 +92,50 @@ func injectDriver2(t *components.Driver, dep injectDriver2dep) error {
 	return nil
 }
 
-func injectDriver3(t *components.Driver, dep interface {
-	getCar(sel string) *components.Car
-}) error {
+////////////////////////////////////////////////////////////////////////////////
+
+type injectDriver3 struct {
+	target *components.Driver `tag:"target" class:"driver"`
+	Car    *components.Car    `value:"#car4"`
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// style like a func
+
+func styleLikeFunc(t *components.Door, context application.RuntimeContext) error {
 
 	// [component]
-	// class=driver
+	// id=style-like-a-func
 
-	t.Car = dep.getCar("#car4")
+	getter := context.NewGetter()
+	ok := true
+
+	t.Position = getter.GetPropertyString(ok, "position", "front-left")
+	t.Owner, ok = getter.GetComponent(ok, "#car1").(*components.Car)
+
+	return getter.Result(ok)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// style like a struct
+
+type xyzInjector struct {
+
+	// [component]
+	// id=style-like-a-struct
+
+	target   *components.Door           `tag:"target" id:"1"  class:"xxx aaa b-b-b c_c_c" scope:"singleton"  initMethod:"start" destroyMethod:"stop" `
+	context  application.RuntimeContext `tag:"context"`
+	Owner    *components.Car            `value:"#abc"`
+	Position string                     `value:"${a.b.c}"`
+}
+
+func (inst *xyzInjector) inject() error {
+
+	t := inst.target
+
+	t.Owner = inst.Owner
+	t.Position = inst.Position
 
 	return nil
 }

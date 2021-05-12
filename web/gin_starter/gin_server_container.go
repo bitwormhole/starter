@@ -1,6 +1,7 @@
 package gin_starter
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -45,12 +46,21 @@ func (inst *GinServerContainer) Inject(context application.RuntimeContext) error
 
 func (inst *GinServerContainer) loadProperties(context application.RuntimeContext) error {
 
-	getter := context.NewGetter(nil)
+	getter := context.GetProperties()
+	str_host := getter.GetProperty("server.host", "")
+	str_port := getter.GetProperty("server.port", "8080")
 
-	inst.port = getter.GetPropertyInt("server.port", 8080)
-	inst.host = getter.GetPropertyString("server.host", "")
+	port, err := strconv.ParseInt(str_port, 10, 32)
+	if err != nil {
+		return err
+	}
+	if port < 1 || 65535 < port {
+		return errors.New("bad port value .")
+	}
 
-	return getter.Result()
+	inst.port = int(port)
+	inst.host = str_host
+	return nil
 }
 
 func (inst *GinServerContainer) initEngine() error {

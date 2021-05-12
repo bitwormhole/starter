@@ -100,12 +100,6 @@ func (inst *runtimeContextFacade) NewChild() application.RuntimeContext {
 	return ctx
 }
 
-func (inst *runtimeContextFacade) NewGetter(ec lang.ErrorCollector) application.ContextGetter {
-	getter := &innerContextGetter{}
-	getter.init(inst, ec)
-	return getter
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // impl runtimeComponentsFacade
 
