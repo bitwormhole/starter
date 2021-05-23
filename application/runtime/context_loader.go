@@ -43,6 +43,9 @@ func (inst *RuntimeContextLoader) Load(config application.Configuration, args []
 		return inst.loadEnv()
 
 	}).Try(func() error {
+		return inst.loadPropertiesInArgs()
+
+	}).Try(func() error {
 		return inst.loadPropertiesInRes1()
 
 	}).Try(func() error {

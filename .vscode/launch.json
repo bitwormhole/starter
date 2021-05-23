@@ -14,7 +14,9 @@
                 "PWD": "D:\\home\\xukun\\git\\wormhole2020projects\\modules\\starter\\demo\\demo-for-config\\conf"
             },
             "args": [
-                "configen", "--application.profiles.active.disable"
+                "configen",
+                "--application.profiles.active.disable",
+                "--c=123"
             ]
         },
         {
