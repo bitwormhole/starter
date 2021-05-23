@@ -4,6 +4,8 @@ import (
 	"embed"
 	"io"
 	"strings"
+
+	"github.com/bitwormhole/starter/collection"
 )
 
 type simpleEmbedResFS struct {
@@ -54,4 +56,11 @@ func (inst *simpleEmbedResFS) GetBinary(path string) ([]byte, error) {
 
 func (inst *simpleEmbedResFS) GetReader(path string) (io.ReadCloser, error) {
 	return nil, nil
+}
+
+func CreateEmbedFsResources(fs *embed.FS, pathPrefix string) collection.Resources {
+	return &simpleEmbedResFS{
+		fs:     fs,
+		prefix: pathPrefix,
+	}
 }
