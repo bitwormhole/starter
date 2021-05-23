@@ -48,6 +48,66 @@ func Config(cb application.ConfigBuilder) error {
 		},
     })
 
+    // exit1
+    cb.AddComponent(&config.ComInfo{
+		ID: "exit1",
+		Class: "exit-code-generator",
+		Scope: application.ScopeSingleton,
+		Aliases: []string{},
+		OnNew: func() lang.Object {
+		    return &elements_a3e8536a.ExitCoder1{}
+		},
+		OnInject: func(obj lang.Object,context application.RuntimeContext) error {
+		    target := obj.(*elements_a3e8536a.ExitCoder1)
+		    return exit1(target,context)
+		},
+    })
+
+    // exit2
+    cb.AddComponent(&config.ComInfo{
+		ID: "exit2",
+		Class: "exit-code-generator",
+		Scope: application.ScopeSingleton,
+		Aliases: []string{},
+		OnNew: func() lang.Object {
+		    return &elements_a3e8536a.ExitCoder2{}
+		},
+		OnInject: func(obj lang.Object,context application.RuntimeContext) error {
+		    target := obj.(*elements_a3e8536a.ExitCoder2)
+		    return exit2(target,context)
+		},
+    })
+
+    // loop1
+    cb.AddComponent(&config.ComInfo{
+		ID: "loop1",
+		Class: "looper",
+		Scope: application.ScopeSingleton,
+		Aliases: []string{},
+		OnNew: func() lang.Object {
+		    return &elements_a3e8536a.Looper1{}
+		},
+		OnInject: func(obj lang.Object,context application.RuntimeContext) error {
+		    target := obj.(*elements_a3e8536a.Looper1)
+		    return loop1(target,context)
+		},
+    })
+
+    // loop2
+    cb.AddComponent(&config.ComInfo{
+		ID: "loop2",
+		Class: "looper",
+		Scope: application.ScopeSingleton,
+		Aliases: []string{},
+		OnNew: func() lang.Object {
+		    return &elements_a3e8536a.Looper2{}
+		},
+		OnInject: func(obj lang.Object,context application.RuntimeContext) error {
+		    target := obj.(*elements_a3e8536a.Looper2)
+		    return loop2(target,context)
+		},
+    })
+
     return nil
 }
 

@@ -43,3 +43,35 @@ func exampleComponent2(com *elements.ComExample2, context application.RuntimeCon
 
 	return in.Done()
 }
+
+func loop1(com *elements.Looper1, context application.RuntimeContext) error {
+
+	// [component]
+	//	class= looper
+
+	return nil
+}
+
+func loop2(com *elements.Looper2, context application.RuntimeContext) error {
+
+	// [component]
+	//	class= looper
+
+	return nil
+}
+
+func exit1(com *elements.ExitCoder1, context application.RuntimeContext) error {
+
+	// [component]
+	//	class= exit-code-generator
+
+	return nil
+}
+
+func exit2(com *elements.ExitCoder2, context application.RuntimeContext) error {
+
+	// [component]
+	//	class= exit-code-generator
+
+	return nil
+}

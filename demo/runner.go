@@ -28,5 +28,6 @@ func Run(cb application.ConfigBuilder) error {
 	}
 
 	log.Println("Exit with code: ", code)
+	os.Exit(code)
 	return nil
 }
