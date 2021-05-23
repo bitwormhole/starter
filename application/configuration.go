@@ -12,7 +12,7 @@ type Configuration interface {
 
 //  ContextLoader 用于加载进程上下文
 type ContextLoader interface {
-	Load(config Configuration, args []string) (RuntimeContext, error)
+	Load(config Configuration, args []string) (Context, error)
 }
 
 // ConfigBuilder 表示应用程序配置

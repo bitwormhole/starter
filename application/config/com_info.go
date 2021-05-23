@@ -18,7 +18,7 @@ type ComInfo struct {
 	OnNew     func() lang.Object
 	OnInit    func(obj lang.Object) error
 	OnDestroy func(obj lang.Object) error
-	OnInject  func(obj lang.Object, context application.RuntimeContext) error
+	OnInject  func(obj lang.Object, context application.Context) error
 
 	demo application.ComponentInfo
 }
@@ -63,7 +63,7 @@ func (inst *comInstanceForComInfo) IsLoaded() bool {
 	return false
 }
 
-func (inst *comInstanceForComInfo) Inject(context application.RuntimeContext) error {
+func (inst *comInstanceForComInfo) Inject(context application.Context) error {
 	fnInject := inst.info.OnInject
 	if fnInject == nil {
 		return nil

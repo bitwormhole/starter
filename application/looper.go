@@ -14,7 +14,7 @@ type Looper interface {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-func tryGetLooper(context RuntimeContext) Looper {
+func tryGetLooper(context Context) Looper {
 
 	list := &looperList{}
 	in := context.Injector()

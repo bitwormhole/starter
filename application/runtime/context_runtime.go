@@ -33,7 +33,7 @@ type contextRuntime struct {
 	uri        string
 }
 
-func (inst *contextRuntime) Init(parent application.RuntimeContext) (application.Context, error) {
+func (inst *contextRuntime) Init(parent application.Context) (application.Context, error) {
 	if parent == nil {
 		return inst._init1()
 	} else {
@@ -61,7 +61,7 @@ func (inst *contextRuntime) _init1() (application.Context, error) {
 	return inst, nil
 }
 
-func (inst *contextRuntime) _init2(parent application.RuntimeContext) (application.Context, error) {
+func (inst *contextRuntime) _init2(parent application.Context) (application.Context, error) {
 
 	// create new
 	child := inst

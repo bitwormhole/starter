@@ -6,7 +6,7 @@ import (
 )
 
 type SingletonComponentHolder struct {
-	context   application.RuntimeContext
+	context   application.Context
 	info      application.ComponentInfo
 	singleton application.ComponentInstance
 }
@@ -31,7 +31,7 @@ func (inst *SingletonComponentHolder) GetInfo() application.ComponentInfo {
 	return inst.info
 }
 
-func (inst *SingletonComponentHolder) GetContext() application.RuntimeContext {
+func (inst *SingletonComponentHolder) GetContext() application.Context {
 	return inst.context
 }
 
@@ -39,7 +39,7 @@ func (inst *SingletonComponentHolder) GetPrototype() lang.Object {
 	return inst.info.GetPrototype()
 }
 
-func (inst *SingletonComponentHolder) MakeChild(context application.RuntimeContext) application.ComponentHolder {
+func (inst *SingletonComponentHolder) MakeChild(context application.Context) application.ComponentHolder {
 
 	singleton := inst.GetInstance()
 

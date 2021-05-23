@@ -30,7 +30,7 @@ const (
 type ComponentInstance interface {
 	Get() lang.Object
 	IsLoaded() bool
-	Inject(context RuntimeContext) error
+	Inject(context Context) error
 	Init() error
 	Destroy() error
 }
@@ -60,8 +60,8 @@ type ComponentHolder interface {
 	IsOriginalName(name string) bool
 	GetInfo() ComponentInfo
 	GetPrototype() lang.Object
-	GetContext() RuntimeContext
-	MakeChild(context RuntimeContext) ComponentHolder
+	GetContext() Context
+	MakeChild(context Context) ComponentHolder
 }
 
 type ComponentHolderFilter func(name string, holder ComponentHolder) bool
@@ -72,7 +72,7 @@ type ComponentLoader interface {
 	Load(h ComponentHolder) (lang.Object, error)
 	LoadAll(h []ComponentHolder) ([]lang.Object, error)
 	GetReleasePool() lang.ReleasePool
-	GetContext() RuntimeContext
+	GetContext() Context
 }
 
 // Components 接口表示一个组件的集合

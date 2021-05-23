@@ -45,6 +45,8 @@ type Context interface {
 }
 
 // RuntimeContext 是app的全局上下文(alias for Context)
+/*
 type RuntimeContext interface {
 	Context
 }
+*/

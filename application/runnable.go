@@ -1,5 +1,5 @@
 package application
 
 type Runnable interface {
-	Run(context RuntimeContext) error
+	Run(context Context) error
 }

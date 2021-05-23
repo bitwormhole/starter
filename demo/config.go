@@ -8,7 +8,7 @@ import (
 
 ////////////////////////////////////////////////////////////////////////////////
 
-func exampleComponent1(com *elements.ComExample1, context application.RuntimeContext) error {
+func exampleComponent1(com *elements.ComExample1, context application.Context) error {
 
 	// [component]
 	//	id=com1
@@ -19,7 +19,7 @@ func exampleComponent1(com *elements.ComExample1, context application.RuntimeCon
 	return in.Done()
 }
 
-func exampleComponent2(com *elements.ComExample2, context application.RuntimeContext) error {
+func exampleComponent2(com *elements.ComExample2, context application.Context) error {
 
 	// [component]
 	//	id=com2
@@ -44,7 +44,7 @@ func exampleComponent2(com *elements.ComExample2, context application.RuntimeCon
 	return in.Done()
 }
 
-func loop1(com *elements.Looper1, context application.RuntimeContext) error {
+func loop1(com *elements.Looper1, context application.Context) error {
 
 	// [component]
 	//	class= looper
@@ -52,7 +52,7 @@ func loop1(com *elements.Looper1, context application.RuntimeContext) error {
 	return nil
 }
 
-func loop2(com *elements.Looper2, context application.RuntimeContext) error {
+func loop2(com *elements.Looper2, context application.Context) error {
 
 	// [component]
 	//	class= looper
@@ -60,7 +60,7 @@ func loop2(com *elements.Looper2, context application.RuntimeContext) error {
 	return nil
 }
 
-func exit1(com *elements.ExitCoder1, context application.RuntimeContext) error {
+func exit1(com *elements.ExitCoder1, context application.Context) error {
 
 	// [component]
 	//	class= exit-code-generator
@@ -68,7 +68,7 @@ func exit1(com *elements.ExitCoder1, context application.RuntimeContext) error {
 	return nil
 }
 
-func exit2(com *elements.ExitCoder2, context application.RuntimeContext) error {
+func exit2(com *elements.ExitCoder2, context application.Context) error {
 
 	// [component]
 	//	class= exit-code-generator

@@ -17,13 +17,13 @@ import (
 type RuntimeContextLoader struct {
 	comInfoList []application.ComponentInfo
 	comTable    map[string]application.ComponentHolder
-	context     application.RuntimeContext
+	context     application.Context
 	config      application.Configuration
 	args        []string
 }
 
 // Load 方法根据传入的配置加载运行时上下文
-func (inst *RuntimeContextLoader) Load(config application.Configuration, args []string) (application.RuntimeContext, error) {
+func (inst *RuntimeContextLoader) Load(config application.Configuration, args []string) (application.Context, error) {
 
 	inst.config = config
 	inst.comTable = make(map[string]application.ComponentHolder)

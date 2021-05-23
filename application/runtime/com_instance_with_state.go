@@ -8,7 +8,7 @@ import (
 type comInstanceWithState struct {
 	// data
 	inner   application.ComponentInstance
-	context application.RuntimeContext
+	context application.Context
 	target  lang.Object
 
 	// state
@@ -36,7 +36,7 @@ func (inst *comInstanceWithState) Get() lang.Object {
 	return inst.target
 }
 
-func (inst *comInstanceWithState) Inject(context application.RuntimeContext) error {
+func (inst *comInstanceWithState) Inject(context application.Context) error {
 	if inst.injectDone {
 		return inst.injectErr
 	}

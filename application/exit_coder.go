@@ -14,7 +14,7 @@ type ExitCodeGenerator interface {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-func tryGetExitCodeGenerator(context RuntimeContext) ExitCodeGenerator {
+func tryGetExitCodeGenerator(context Context) ExitCodeGenerator {
 
 	list := &exitCoderList{}
 	in := context.Injector()

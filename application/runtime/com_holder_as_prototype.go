@@ -6,7 +6,7 @@ import (
 )
 
 type PrototypeComponentHolder struct {
-	context application.RuntimeContext
+	context application.Context
 	info    application.ComponentInfo
 }
 
@@ -30,11 +30,11 @@ func (inst *PrototypeComponentHolder) GetInfo() application.ComponentInfo {
 	return inst.info
 }
 
-func (inst *PrototypeComponentHolder) GetContext() application.RuntimeContext {
+func (inst *PrototypeComponentHolder) GetContext() application.Context {
 	return inst.context
 }
 
-func (inst *PrototypeComponentHolder) MakeChild(context application.RuntimeContext) application.ComponentHolder {
+func (inst *PrototypeComponentHolder) MakeChild(context application.Context) application.ComponentHolder {
 
 	if context == nil {
 		context = inst.context
