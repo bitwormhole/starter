@@ -1,6 +1,10 @@
 package application
 
-import "github.com/bitwormhole/starter/lang"
+import (
+	"io"
+
+	"github.com/bitwormhole/starter/lang"
+)
 
 // ComponentScope 枚举表示组件的作用域
 type ComponentScope uint32
@@ -44,6 +48,7 @@ type ComponentInfo interface {
 	GetClasses() []string
 	GetScope() ComponentScope
 	GetFactory() ComponentFactory
+	GetPrototype() lang.Object
 
 	IsTypeOf(typeName string) bool
 	IsNameOf(alias string) bool
@@ -54,17 +59,33 @@ type ComponentHolder interface {
 	GetInstance() ComponentInstance
 	IsOriginalName(name string) bool
 	GetInfo() ComponentInfo
+	GetPrototype() lang.Object
 	GetContext() RuntimeContext
 	MakeChild(context RuntimeContext) ComponentHolder
 }
 
+type ComponentHolderFilter func(name string, holder ComponentHolder) bool
+
+// ComponentLoader 用于加载组件的实例
+type ComponentLoader interface {
+	io.Closer
+	Load(h ComponentHolder) (lang.Object, error)
+	LoadAll(h []ComponentHolder) ([]lang.Object, error)
+	GetReleasePool() lang.ReleasePool
+	GetContext() RuntimeContext
+}
+
 // Components 接口表示一个组件的集合
 type Components interface {
-	GetComponent(name string) (lang.Object, error)
-	GetComponentByClass(classSelector string) (lang.Object, error)
-	GetComponentsByClass(classSelector string) []lang.Object
+	// ids
 	GetComponentNameList(includeAliases bool) []string
-	////
+
+	// getters
+	GetComponent(selector string) (ComponentHolder, error)
+	GetComponents(selector string) []ComponentHolder
+	GetComponentsByFilter(f ComponentHolderFilter) []ComponentHolder
+
+	// export & import
 	Export(map[string]ComponentHolder) map[string]ComponentHolder
 	Import(map[string]ComponentHolder)
 }

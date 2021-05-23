@@ -7,6 +7,11 @@ type Disposable interface {
 	Dispose() error
 }
 
+type ReleasePool interface {
+	Release() error
+	Push(target Disposable)
+}
+
 func Dispose(t Disposable) error {
 	if t == nil {
 		return nil
@@ -19,4 +24,11 @@ func Close(t io.Closer) error {
 		return nil
 	}
 	return t.Close()
+}
+
+func Release(pool ReleasePool) error {
+	if pool == nil {
+		return nil
+	}
+	return pool.Release()
 }

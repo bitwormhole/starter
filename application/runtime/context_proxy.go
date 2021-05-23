@@ -7,22 +7,44 @@ import (
 )
 
 type contextProxy struct {
-	current  application.RuntimeContext
-	creation application.RuntimeContext
-	runtime  application.RuntimeContext
+	current  application.Context
+	creation application.Context
+	runtime  application.Context
+	pool     lang.ReleasePool
 }
 
-func (inst *contextProxy) startRuntime() {
+func (inst *contextProxy) start() application.Context {
 	inst.current = inst.runtime
 	inst.creation = nil
+	return inst
+}
+
+func (inst *contextProxy) FindComponent(selector string) (lang.Object, error) {
+	return inst.current.FindComponent(selector)
+}
+
+func (inst *contextProxy) FindComponents(selector string) []lang.Object {
+	return inst.current.FindComponents(selector)
+}
+
+func (inst *contextProxy) Injector() application.Injector {
+	return inst.current.Injector()
+}
+
+func (inst *contextProxy) InjectorScope(scope application.ComponentScope) application.Injector {
+	return inst.current.InjectorScope(scope)
 }
 
 func (inst *contextProxy) GetComponents() application.Components {
 	return inst.current.GetComponents()
 }
 
-func (inst *contextProxy) GetReleasePool() collection.ReleasePool {
-	return inst.current.GetReleasePool()
+func (inst *contextProxy) GetReleasePool() lang.ReleasePool {
+	pool := inst.pool
+	if pool == nil {
+		pool = inst.current.GetReleasePool()
+	}
+	return pool
 }
 
 func (inst *contextProxy) GetArguments() collection.Arguments {
@@ -69,7 +91,7 @@ func (inst *contextProxy) GetShutdownTimestamp() int64 {
 	return inst.current.GetShutdownTimestamp()
 }
 
-func (inst *contextProxy) NewChild() application.RuntimeContext {
+func (inst *contextProxy) NewChild() application.Context {
 	return inst.current.NewChild()
 }
 
@@ -79,8 +101,4 @@ func (inst *contextProxy) GetErrorHandler() lang.ErrorHandler {
 
 func (inst *contextProxy) SetErrorHandler(h lang.ErrorHandler) {
 	inst.current.SetErrorHandler(h)
-}
-
-func (inst *contextProxy) OpenCreationContext(scope application.ComponentScope) application.CreationContext {
-	return inst.current.OpenCreationContext(scope)
 }

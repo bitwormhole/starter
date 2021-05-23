@@ -75,11 +75,11 @@ func (inst *RuntimeContextLoader) Load(config application.Configuration, args []
 
 func (inst *RuntimeContextLoader) loadArguments() error {
 	src := inst.args
-	dst := inst.context.GetArguments()
+	dest := inst.context.GetArguments()
 	if src == nil {
 		return nil
 	}
-	dst.Import(src)
+	dest.Import(src)
 	return nil
 }
 
@@ -162,7 +162,8 @@ func (inst *RuntimeContextLoader) loadPropertiesInRes2() error {
 
 func (inst *RuntimeContextLoader) createRuntimeContext() error {
 
-	core := createRuntimeContextCore()
+	core := &contextRuntime{}
+	core.Init(nil)
 
 	core.appName = ""
 	core.appVersion = ""
@@ -171,7 +172,7 @@ func (inst *RuntimeContextLoader) createRuntimeContext() error {
 	core.uri = ""
 	core.resources = inst.config.GetResources()
 
-	inst.context = core.context
+	inst.context = core
 	return nil
 }
 
@@ -260,8 +261,8 @@ func (inst *RuntimeContextLoader) loadSingletonComponents() error {
 
 	scopeWant := application.ScopeSingleton
 
-	cc := inst.context.OpenCreationContext(scopeWant)
-	context := cc.GetContext()
+	injector := inst.context.InjectorScope(scopeWant)
+	context := inst.context
 	components := context.GetComponents()
 	table := components.Export(nil)
 
@@ -271,14 +272,14 @@ func (inst *RuntimeContextLoader) loadSingletonComponents() error {
 		id := info.GetID()
 		scope := info.GetScope()
 		if (id == name) && (scope == scopeWant) {
-			_, err := components.GetComponent(name)
+			_, err := injector.GetComponent("#" + name)
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	return cc.Close()
+	return injector.Done()
 }
 
 func (inst *RuntimeContextLoader) logDebugInfo() error {

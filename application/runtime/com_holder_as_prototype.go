@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"github.com/bitwormhole/starter/application"
+	"github.com/bitwormhole/starter/lang"
 )
 
 type PrototypeComponentHolder struct {
@@ -19,6 +20,10 @@ func (inst *PrototypeComponentHolder) IsOriginalName(name string) bool {
 func (inst *PrototypeComponentHolder) GetInstance() application.ComponentInstance {
 	factory := inst.info.GetFactory()
 	return factory.NewInstance()
+}
+
+func (inst *PrototypeComponentHolder) GetPrototype() lang.Object {
+	return inst.info.GetPrototype()
 }
 
 func (inst *PrototypeComponentHolder) GetInfo() application.ComponentInfo {

@@ -119,6 +119,11 @@ func (inst *ComInfo) GetFactory() application.ComponentFactory {
 	return &comFactoryForComInfo{info: inst}
 }
 
+// GetPrototype 获取组件的原型
+func (inst *ComInfo) GetPrototype() lang.Object {
+	return nil
+}
+
 // IsTypeOf 判断 class 是否匹配
 func (inst *ComInfo) IsTypeOf(name string) bool {
 	// nop

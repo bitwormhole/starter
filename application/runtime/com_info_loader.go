@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bitwormhole/starter/application"
+	"github.com/bitwormhole/starter/lang"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,6 +48,7 @@ func (inst *componentInfoPreprocessor) prepare(info1 application.ComponentInfo, 
 	info2.classes = classes
 	info2.factory = factory
 	info2.scope = scope
+	info2.prototype = factory.NewInstance().Get()
 	return info2, nil
 }
 
@@ -99,8 +101,9 @@ type preparedComponentInfo struct {
 	aliases     []string
 	classes     []string
 
-	scope   application.ComponentScope
-	factory application.ComponentFactory
+	scope     application.ComponentScope
+	factory   application.ComponentFactory
+	prototype lang.Object
 }
 
 func (inst *preparedComponentInfo) GetID() string {
@@ -125,6 +128,10 @@ func (inst *preparedComponentInfo) GetScope() application.ComponentScope {
 
 func (inst *preparedComponentInfo) GetFactory() application.ComponentFactory {
 	return inst.factory
+}
+
+func (inst *preparedComponentInfo) GetPrototype() lang.Object {
+	return inst.prototype
 }
 
 func (inst *preparedComponentInfo) IsTypeOf(typeName string) bool {

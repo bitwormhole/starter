@@ -4,22 +4,25 @@ import "errors"
 
 // ErrorCollector 表示一个错误收集器
 type ErrorCollector interface {
-	AddError(err error)
-	AddErrorIfFalse(ok bool, msg string)
-	AddErrorIfNil(target Object, msg string)
+	Append(err error)
+	AppendIfFalse(ok bool, msg string)
+	AppendIfNil(target Object, msg string)
+
+	LastError() error
 	Result() error
 }
 
 // NewErrorCollector 创建一个错误收集器
 func NewErrorCollector() ErrorCollector {
-	return &innerErrorCollector{}
+	return &DefaultErrorCollector{}
 }
 
-type innerErrorCollector struct {
-	all []error
+type DefaultErrorCollector struct {
+	all     []error
+	lastErr error
 }
 
-func (inst *innerErrorCollector) Result() error {
+func (inst *DefaultErrorCollector) Result() error {
 	all := inst.all
 	if all == nil {
 		return nil
@@ -30,7 +33,11 @@ func (inst *innerErrorCollector) Result() error {
 	return all[0]
 }
 
-func (inst *innerErrorCollector) AddError(err error) {
+func (inst *DefaultErrorCollector) LastError() error {
+	return inst.lastErr
+}
+
+func (inst *DefaultErrorCollector) Append(err error) {
 	if err == nil {
 		return
 	}
@@ -41,16 +48,17 @@ func (inst *innerErrorCollector) AddError(err error) {
 		all = append(all, err)
 	}
 	inst.all = all
+	inst.lastErr = err
 }
 
-func (inst *innerErrorCollector) AddErrorIfNil(value Object, msg string) {
+func (inst *DefaultErrorCollector) AppendIfNil(value Object, msg string) {
 	if value == nil {
-		inst.AddError(errors.New(msg))
+		inst.Append(errors.New(msg))
 	}
 }
 
-func (inst *innerErrorCollector) AddErrorIfFalse(value bool, msg string) {
+func (inst *DefaultErrorCollector) AppendIfFalse(value bool, msg string) {
 	if !value {
-		inst.AddError(errors.New(msg))
+		inst.Append(errors.New(msg))
 	}
 }

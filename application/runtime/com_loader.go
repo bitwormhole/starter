@@ -1,9 +1,6 @@
 package runtime
 
 import (
-	"errors"
-	"sort"
-
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/lang"
 )
@@ -15,15 +12,8 @@ type componentLoading struct {
 	holder       application.ComponentHolder
 	instance     application.ComponentInstance
 	loadingOrder int
-}
-
-type creationComponentLoader struct {
-	core              *creationContextCore
-	loadingOrderCount int
-}
-
-type runtimeComponentLoader struct {
-	core *runtimeContextCore
+	hasStarted   bool
+	hasInjected  bool
 }
 
 type componentLoadingSorter struct {
@@ -31,137 +21,46 @@ type componentLoadingSorter struct {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// impl creationComponentLoader
+// struct componentInstanceCloser
 
-func (inst *creationComponentLoader) createNewLoading(holder application.ComponentHolder) *componentLoading {
-	instance := holder.GetInstance()
-	loading := &componentLoading{}
-	loading.instance = instance
-	loading.holder = holder
-	loading.loadingOrder = inst.loadingOrderCount
-	inst.loadingOrderCount++
-	return loading
+type componentInstanceCloser struct {
+	instance application.ComponentInstance
 }
 
-func (inst *creationComponentLoader) loadComponent(holder application.ComponentHolder) (lang.Object, error) {
-
-	if holder == nil {
-		return nil, errors.New("holder==nil:ComponentHolder")
-	}
-
-	id := holder.GetInfo().GetID()
-	cache := inst.core.cache
-	loading := cache[id]
-
-	if loading == nil {
-		loading = inst.createNewLoading(holder)
-		cache[id] = loading
-		// do inject
-		ctx := inst.core.proxy
-		loading.instance.Inject(ctx)
-	}
-
-	// result
-	target := loading.instance.Get()
-	return target, nil
-}
-
-func (inst *creationComponentLoader) loadComponents(holders []application.ComponentHolder) ([]lang.Object, error) {
-	if holders == nil {
-		return nil, errors.New("holders==nil:ComponentHolder")
-	}
-	dst := make([]lang.Object, 0)
-	for index := range holders {
-		h := holders[index]
-		target, err := inst.loadComponent(h)
-		if err != nil {
-			return nil, err
-		}
-		if target == nil {
-			continue
-		}
-		dst = append(dst, target)
-	}
-	return dst, nil
-}
-
-func (inst *creationComponentLoader) startAllComponents() error {
-
-	table := inst.core.cache
-	list := make([]*componentLoading, 0)
-	for key := range table {
-		list = append(list, table[key])
-	}
-
-	// todo: sort by loadingOrder
-	sort.Sort(&componentLoadingSorter{items: list})
-
-	for index := range list {
-		item := list[index]
-		err := item.instance.Init()
-		if err != nil {
-			return err
-		}
-	}
+func (inst *componentInstanceCloser) Dispose() error {
 	return nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// impl runtimeComponentLoader
+// impl creationComponentLoader
 
-func (inst *runtimeComponentLoader) loadComponent(holder application.ComponentHolder) (lang.Object, error) {
-
-	if holder == nil {
-		return nil, errors.New("holder==nil:ComponentHolder")
+func (inst *componentLoading) tryStart(pool lang.ReleasePool) error {
+	if inst.hasStarted {
+		return nil
+	} else {
+		inst.hasStarted = true
 	}
-
-	info := holder.GetInfo()
-	scope := info.GetScope()
-
-	if scope == application.ScopeSingleton {
-		instance := holder.GetInstance()
-		if instance.IsLoaded() {
-			target := instance.Get()
-			return target, nil
-		}
+	if inst.instance.IsLoaded() {
+		return nil
 	}
-
-	// do loading
-	ctx := inst.core.context
-	cc := ctx.OpenCreationContext(scope)
-	id := info.GetID()
-	components := cc.GetContext().GetComponents()
-
-	target, err := components.GetComponent(id)
+	err := inst.instance.Init()
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	err = cc.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	return target, nil
+	pool.Push(&componentInstanceCloser{instance: inst.instance})
+	return nil
 }
 
-func (inst *runtimeComponentLoader) loadComponents(holders []application.ComponentHolder) ([]lang.Object, error) {
-	if holders == nil {
-		return nil, errors.New("holders==nil:ComponentHolder")
+func (inst *componentLoading) tryInject(context application.Context) error {
+	if inst.hasInjected {
+		return nil
+	} else {
+		inst.hasInjected = true
 	}
-	dst := make([]lang.Object, 0)
-	for index := range holders {
-		h := holders[index]
-		target, err := inst.loadComponent(h)
-		if err != nil {
-			return nil, err
-		}
-		if target == nil {
-			continue
-		}
-		dst = append(dst, target)
+	if inst.instance.IsLoaded() {
+		return nil
 	}
-	return dst, nil
+	return inst.instance.Inject(context)
 }
 
 ////////////////////////////////////////////////////////////////////////////////

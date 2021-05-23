@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"github.com/bitwormhole/starter/application"
+	"github.com/bitwormhole/starter/lang"
 )
 
 type SingletonComponentHolder struct {
@@ -32,6 +33,10 @@ func (inst *SingletonComponentHolder) GetInfo() application.ComponentInfo {
 
 func (inst *SingletonComponentHolder) GetContext() application.RuntimeContext {
 	return inst.context
+}
+
+func (inst *SingletonComponentHolder) GetPrototype() lang.Object {
+	return inst.info.GetPrototype()
 }
 
 func (inst *SingletonComponentHolder) MakeChild(context application.RuntimeContext) application.ComponentHolder {

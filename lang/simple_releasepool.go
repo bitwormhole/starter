@@ -1,11 +1,7 @@
-package collection
-
-import (
-	"github.com/bitwormhole/starter/lang"
-)
+package lang
 
 type SimpleReleasePool struct {
-	list []lang.Disposable
+	list []Disposable
 }
 
 func (inst *SimpleReleasePool) Release() error {
@@ -16,7 +12,7 @@ func (inst *SimpleReleasePool) Release() error {
 		return nil
 	}
 
-	results := lang.NewErrorCollector()
+	results := NewErrorCollector()
 	size := len(list)
 
 	for i := size - 1; i >= 0; i-- {
@@ -26,20 +22,20 @@ func (inst *SimpleReleasePool) Release() error {
 		}
 		err := item.Dispose()
 		if err != nil {
-			results.AddError(err)
+			results.Append(err)
 		}
 	}
 
 	return results.Result()
 }
 
-func (inst *SimpleReleasePool) Push(target lang.Disposable) {
+func (inst *SimpleReleasePool) Push(target Disposable) {
 	if target == nil {
 		return
 	}
 	list := inst.list
 	if list == nil {
-		list = make([]lang.Disposable, 0)
+		list = make([]Disposable, 0)
 	}
 	inst.list = append(list, target)
 }
