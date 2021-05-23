@@ -12,6 +12,8 @@ var resources embed.FS
 
 func main() {
 	cb := config.NewBuilderFS(&resources, "src/main/resources")
+	cb.SetEnableLoadPropertiesFromArguments(false)
+
 	err := demo.Run(cb)
 	if err != nil {
 		panic(err)

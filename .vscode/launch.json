@@ -34,6 +34,22 @@
                 "--application.profiles.active=demo4gin",
                 "--c=789"
             ]
+        },
+        {
+            "name": "debug",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "env": {},
+            "args": [
+                "demo4gin",
+                "",
+                "configen|demo",
+                "b",
+                "--application.profiles.active=debug",
+                "--c=789"
+            ]
         }
     ],
 }

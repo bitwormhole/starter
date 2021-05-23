@@ -111,6 +111,12 @@ func (inst *RuntimeContextLoader) loadEnv() error {
 
 func (inst *RuntimeContextLoader) loadPropertiesInArgs() error {
 
+	enable := inst.config.IsEnableLoadPropertiesFromArguments()
+	if !enable {
+		// skip
+		return nil
+	}
+
 	props := inst.context.GetProperties()
 	args := inst.context.GetArguments()
 	array := args.Export()

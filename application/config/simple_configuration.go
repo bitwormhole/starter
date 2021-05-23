@@ -11,13 +11,20 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 
 // AppConfig 提供一个简易的 Configuration 实现
-type AppConfig struct {
+type appConfig struct {
 	// implements Configuration
-	components []application.ComponentInfo
-	resources  collection.Resources
+	components                   []application.ComponentInfo
+	resources                    collection.Resources
+	enableLoadPropertiesFromArgs bool
 }
 
-func (inst *AppConfig) getComList(create bool) []application.ComponentInfo {
+func (inst *appConfig) init() application.ConfigBuilder {
+	inst.components = []application.ComponentInfo{}
+	inst.enableLoadPropertiesFromArgs = true
+	return inst
+}
+
+func (inst *appConfig) getComList(create bool) []application.ComponentInfo {
 	list := inst.components
 	if (create) && (list == nil) {
 		list = make([]application.ComponentInfo, 0)
@@ -27,64 +34,82 @@ func (inst *AppConfig) getComList(create bool) []application.ComponentInfo {
 }
 
 // GetComponents 返回组件的注册信息
-func (inst *AppConfig) GetComponents() []application.ComponentInfo {
+func (inst *appConfig) GetComponents() []application.ComponentInfo {
 	return inst.getComList(true)
 }
 
 // Create 用于创建配置
-func (inst *AppConfig) Create() application.Configuration {
+func (inst *appConfig) Create() application.Configuration {
 	return inst
 }
 
 // GetEnvironment 用于env
-func (inst *AppConfig) GetEnvironment() collection.Environment {
+func (inst *appConfig) GetEnvironment() collection.Environment {
 	return nil
 }
 
+func (inst *appConfig) IsEnableLoadPropertiesFromArguments() bool {
+	return inst.enableLoadPropertiesFromArgs
+}
+
+func (inst *appConfig) SetEnableLoadPropertiesFromArguments(enable bool) {
+	inst.enableLoadPropertiesFromArgs = enable
+}
+
 // AddComponent 注册一个组件
-func (inst *AppConfig) AddComponent(info application.ComponentInfo) {
+func (inst *appConfig) AddComponent(info application.ComponentInfo) {
 	list := inst.getComList(true)
 	inst.components = append(list, info)
 }
 
 // GetLoader 返回加载器
-func (inst *AppConfig) GetLoader() application.ContextLoader {
+func (inst *appConfig) GetLoader() application.ContextLoader {
 	return &runtime.RuntimeContextLoader{}
 }
 
 // GetBuilder 返回构建器
-func (inst *AppConfig) GetBuilder() application.ConfigBuilder {
+func (inst *appConfig) GetBuilder() application.ConfigBuilder {
 	return inst
 }
 
 // SetResources 用于配置上下文的资源文件夹
-func (inst *AppConfig) SetResFS(fs *embed.FS, prefix string) {
+func (inst *appConfig) SetResFS(fs *embed.FS, prefix string) {
 	inst.resources = &simpleEmbedResFS{
 		fs:     fs,
 		prefix: prefix,
 	}
 }
 
-func (inst *AppConfig) SetResources(res collection.Resources) {
+func (inst *appConfig) SetResources(res collection.Resources) {
 	inst.resources = res
 }
 
 // GetResources 用于获取上下文的资源文件夹
-func (inst *AppConfig) GetResources() collection.Resources {
+func (inst *appConfig) GetResources() collection.Resources {
 	return inst.resources
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Builder
 
-func NewBuilderFS(fs *embed.FS, prefix string) application.ConfigBuilder {
-	cfg := &AppConfig{}
-	cfg.SetResFS(fs, prefix)
-	return cfg
+func NewBuilder() application.ConfigBuilder {
+	cfg := &appConfig{}
+	cb := cfg.init()
+	return cb
 }
 
-func NewBuilder() application.ConfigBuilder {
-	return &AppConfig{}
+func NewBuilderRes(res collection.Resources) application.ConfigBuilder {
+	cfg := &appConfig{}
+	cb := cfg.init()
+	cb.SetResources(res)
+	return cb
+}
+
+func NewBuilderFS(fs *embed.FS, prefix string) application.ConfigBuilder {
+	cfg := &appConfig{}
+	cb := cfg.init()
+	cfg.SetResFS(fs, prefix)
+	return cb
 }
 
 ////////////////////////////////////////////////////////////////////////////////
