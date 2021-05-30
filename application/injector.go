@@ -1,6 +1,8 @@
 package application
 
-import "github.com/bitwormhole/starter/lang"
+import (
+	"github.com/bitwormhole/starter/lang"
+)
 
 type Injection interface {
 	AsList() Injection

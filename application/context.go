@@ -44,9 +44,7 @@ type Context interface {
 	InjectorScope(scope ComponentScope) Injector
 }
 
-// RuntimeContext 是app的全局上下文(alias for Context)
-/*
-type RuntimeContext interface {
-	Context
+type SimpleContext interface {
+	GetAttribute(name string) interface{}
+	SetAttribute(name string, value interface{})
 }
-*/
