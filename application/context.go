@@ -45,6 +45,5 @@ type Context interface {
 }
 
 type SimpleContext interface {
-	GetAttribute(name string) interface{}
-	SetAttribute(name string, value interface{})
+	collection.Atts
 }
