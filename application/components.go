@@ -26,6 +26,10 @@ const (
 	ScopeMax ComponentScope = 4 // 最大
 )
 
+// Component  是一个标记接口，用于配置一个组件
+type Component interface {
+}
+
 // ComponentInstance  一个具体的组件的实例的引用
 type ComponentInstance interface {
 	Get() lang.Object
