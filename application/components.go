@@ -26,14 +26,6 @@ const (
 	ScopeMax ComponentScope = 4 // 最大
 )
 
-// Component  是一个标记接口，用于配置一个组件
-//  请在配置组件的 interface{} 里面包含以下两个方法
-//	Component(application.Component) *foo.Bar
-//	Context() application.Context
-type Component interface {
-	// this is a empty interface
-}
-
 // ComponentInstance  一个具体的组件的实例的引用
 type ComponentInstance interface {
 	Get() lang.Object
