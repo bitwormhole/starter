@@ -3,75 +3,53 @@ package demo
 import (
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/demo/elements"
-	lang "github.com/bitwormhole/starter/lang"
+	"github.com/bitwormhole/starter/markup"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
 
-func exampleComponent1(com *elements.ComExample1, context application.Context) error {
+type exampleComponent1 struct {
+	markup.Component `id:"com1" class:"com1"`
 
-	// [component]
-	//	id=com1
-	//	class=com1
+	instance *elements.ComExample1
+	context  application.Context
 
-	in := context.Injector()
-	com.Name = in.GetPropertyString("com1.name", "cc1")
-	return in.Done()
+	Name string `inject:"${com1.name}" default:"cc1"`
 }
 
-func exampleComponent2(com *elements.ComExample2, context application.Context) error {
+type exampleComponent2 struct {
+	markup.Component `id:"com2" class:"com2  Looper"`
 
-	// [component]
-	//	id=com2
-	//	class=com2  Looper
-	//  initMethod=Open
-	//  destroyMethod=Close
+	instance *elements.ComExample2 `initMethod:"Open" destroyMethod:"Close"`
+	context  application.Context
 
-	in := context.Injector()
-
-	in.Inject("#com1").Accept(func(key string, h application.ComponentHolder) bool {
-		pt := h.GetPrototype()
-		_, ok := pt.(*elements.ComExample1)
-		return ok
-	}).To(func(o lang.Object) bool {
-		t, ok := o.(*elements.ComExample1)
-		if ok {
-			com.Com1ref = t
-		}
-		return ok
-	})
-
-	return in.Done()
+	Com1ref *elements.ComExample1 `inject:"#com1"`
 }
 
-func loop1(com *elements.Looper1, context application.Context) error {
+type loop1 struct {
+	markup.Component `class:"looper"`
 
-	// [component]
-	//	class= looper
-
-	return nil
+	instance *elements.Looper1
+	context  application.Context
 }
 
-func loop2(com *elements.Looper2, context application.Context) error {
+type loop2 struct {
+	markup.Component `class:"looper"`
 
-	// [component]
-	//	class= looper
-
-	return nil
+	instance *elements.Looper2
+	context  application.Context
 }
 
-func exit1(com *elements.ExitCoder1, context application.Context) error {
+type exit1 struct {
+	markup.Component `class:"exit-code-generator"`
 
-	// [component]
-	//	class= exit-code-generator
-
-	return nil
+	instance *elements.ExitCoder1
+	context  application.Context
 }
 
-func exit2(com *elements.ExitCoder2, context application.Context) error {
+type exit2 struct {
+	markup.Component `class:"exit-code-generator"`
 
-	// [component]
-	//	class= exit-code-generator
-
-	return nil
+	instance *elements.ExitCoder2
+	context  application.Context
 }

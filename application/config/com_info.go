@@ -7,6 +7,13 @@ import (
 	"github.com/bitwormhole/starter/lang"
 )
 
+// 定义 ComInfo 的函数签名
+
+type OnNew func() lang.Object
+type OnInject func(obj lang.Object, context application.Context) error
+type OnInit func(obj lang.Object) error
+type OnDestroy func(obj lang.Object) error
+
 // ComInfo 提供一个简易的 ComponentInfo 实现
 type ComInfo struct {
 	// implements ComponentInfo
@@ -15,12 +22,12 @@ type ComInfo struct {
 	Scope   application.ComponentScope
 	Aliases []string
 
-	OnNew     func() lang.Object
-	OnInit    func(obj lang.Object) error
-	OnDestroy func(obj lang.Object) error
-	OnInject  func(obj lang.Object, context application.Context) error
+	OnNew     OnNew
+	OnInject  OnInject
+	OnInit    OnInit
+	OnDestroy OnDestroy
 
-	demo application.ComponentInfo
+	// demo application.ComponentInfo
 }
 
 type comFactoryForComInfo struct {
