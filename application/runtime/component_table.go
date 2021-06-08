@@ -74,6 +74,19 @@ func (inst *componentTable) GetComponents(selector string) []application.Compone
 		// class
 		class := selector[1:]
 		return inst.findComponentsByClass(class)
+	} else if selector == "*.scope(singleton)" {
+		// scope: singleton
+		return inst.GetComponentsByFilter(func(name string, ch application.ComponentHolder) bool {
+			if ch == nil {
+				return false
+			}
+			scope := ch.GetInfo().GetScope()
+			if scope != application.ScopeSingleton {
+				return false
+			}
+			comId := ch.GetInfo().GetID()
+			return (comId == name)
+		})
 	} else if selector == "*" {
 		// all (without aliases)
 		return inst.GetComponentsByFilter(func(name string, ch application.ComponentHolder) bool {
