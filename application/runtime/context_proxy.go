@@ -1,104 +1,103 @@
 package runtime
 
 import (
+	"io"
+
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/lang"
 )
 
-type contextProxy struct {
-	current  application.Context
-	creation application.Context
-	runtime  application.Context
-	pool     lang.ReleasePool
+type ContextProxy struct {
+	io.Closer
+
+	Current  application.Context
+	Creation application.Context
+	Runtime  application.Context
 }
 
-func (inst *contextProxy) start() application.Context {
-	inst.current = inst.runtime
-	inst.creation = nil
-	return inst
+func (inst *ContextProxy) Close() error {
+	inst.Current = inst.Runtime
+	inst.Creation = nil
+	return nil
 }
 
-func (inst *contextProxy) FindComponent(selector string) (lang.Object, error) {
-	return inst.current.FindComponent(selector)
+func (inst *ContextProxy) GetComponent(selector string) (lang.Object, error) {
+	return inst.Current.GetComponent(selector)
 }
 
-func (inst *contextProxy) FindComponents(selector string) []lang.Object {
-	return inst.current.FindComponents(selector)
+func (inst *ContextProxy) GetComponentList(selector string) ([]lang.Object, error) {
+	return inst.Current.GetComponentList(selector)
 }
 
-func (inst *contextProxy) Injector() application.Injector {
-	return inst.current.Injector()
+func (inst *ContextProxy) Injector() application.Injector {
+	return inst.Current.Injector()
 }
 
-func (inst *contextProxy) InjectorScope(scope application.ComponentScope) application.Injector {
-	return inst.current.InjectorScope(scope)
+func (inst *ContextProxy) ComponentLoader() application.ComponentLoader {
+	return inst.Current.ComponentLoader()
 }
 
-func (inst *contextProxy) GetComponents() application.Components {
-	return inst.current.GetComponents()
+func (inst *ContextProxy) GetComponents() application.Components {
+	return inst.Current.GetComponents()
 }
 
-func (inst *contextProxy) GetReleasePool() lang.ReleasePool {
-	pool := inst.pool
-	if pool == nil {
-		pool = inst.current.GetReleasePool()
-	}
-	return pool
+func (inst *ContextProxy) GetReleasePool() lang.ReleasePool {
+	return inst.Current.GetReleasePool()
 }
 
-func (inst *contextProxy) GetArguments() collection.Arguments {
-	return inst.current.GetArguments()
+func (inst *ContextProxy) GetArguments() collection.Arguments {
+	return inst.Current.GetArguments()
 }
 
-func (inst *contextProxy) GetAttributes() collection.Attributes {
-	return inst.current.GetAttributes()
+func (inst *ContextProxy) GetAttributes() collection.Attributes {
+	return inst.Current.GetAttributes()
 }
 
-func (inst *contextProxy) GetEnvironment() collection.Environment {
-	return inst.current.GetEnvironment()
+func (inst *ContextProxy) GetEnvironment() collection.Environment {
+	return inst.Current.GetEnvironment()
 }
 
-func (inst *contextProxy) GetProperties() collection.Properties {
-	return inst.current.GetProperties()
+func (inst *ContextProxy) GetProperties() collection.Properties {
+	return inst.Current.GetProperties()
 }
 
-func (inst *contextProxy) GetParameters() collection.Parameters {
-	return inst.current.GetParameters()
+func (inst *ContextProxy) GetParameters() collection.Parameters {
+	return inst.Current.GetParameters()
 }
 
-func (inst *contextProxy) GetResources() collection.Resources {
-	return inst.current.GetResources()
+func (inst *ContextProxy) GetResources() collection.Resources {
+	return inst.Current.GetResources()
 }
 
-func (inst *contextProxy) GetApplicationName() string {
-	return inst.current.GetApplicationName()
+func (inst *ContextProxy) GetApplicationName() string {
+	return inst.Current.GetApplicationName()
 }
 
-func (inst *contextProxy) GetURI() string {
-	return inst.current.GetURI()
+func (inst *ContextProxy) GetURI() string {
+	return inst.Current.GetURI()
 }
 
-func (inst *contextProxy) GetApplicationVersion() string {
-	return inst.current.GetApplicationVersion()
+func (inst *ContextProxy) GetApplicationVersion() string {
+	return inst.Current.GetApplicationVersion()
 }
 
-func (inst *contextProxy) GetStartupTimestamp() int64 {
-	return inst.current.GetStartupTimestamp()
+func (inst *ContextProxy) GetStartupTimestamp() int64 {
+	return inst.Current.GetStartupTimestamp()
 }
 
-func (inst *contextProxy) GetShutdownTimestamp() int64 {
-	return inst.current.GetShutdownTimestamp()
+func (inst *ContextProxy) GetShutdownTimestamp() int64 {
+	return inst.Current.GetShutdownTimestamp()
 }
 
-func (inst *contextProxy) NewChild() application.Context {
-	return inst.current.NewChild()
+func (inst *ContextProxy) NewChild() application.Context {
+	return inst.Current.NewChild()
 }
 
-func (inst *contextProxy) GetErrorHandler() lang.ErrorHandler {
-	return inst.current.GetErrorHandler()
+func (inst *ContextProxy) GetErrorHandler() lang.ErrorHandler {
+	return inst.Current.GetErrorHandler()
 }
 
-func (inst *contextProxy) SetErrorHandler(h lang.ErrorHandler) {
-	inst.current.SetErrorHandler(h)
+func (inst *ContextProxy) SetErrorHandler(h lang.ErrorHandler) {
+	inst.Current.SetErrorHandler(h)
 }

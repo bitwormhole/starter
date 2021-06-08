@@ -15,21 +15,19 @@ type ExitCodeGenerator interface {
 ////////////////////////////////////////////////////////////////////////////////
 
 func tryGetExitCodeGenerator(context Context) ExitCodeGenerator {
-
-	list := &exitCoderList{}
-	in := context.Injector()
-	selector := "." + ExitCodeGeneratorClassName
-
-	in.Inject(selector).AsList().To(func(o lang.Object) bool {
-		item, ok := o.(ExitCodeGenerator)
+	dst := &exitCoderList{}
+	src, err := context.GetComponentList("." + ExitCodeGeneratorClassName)
+	if err != nil {
+		return dst
+	}
+	for index := range src {
+		obj := src[index]
+		item, ok := obj.(ExitCodeGenerator)
 		if ok {
-			list.Add(item)
+			dst.Add(item)
 		}
-		return ok
-	})
-
-	in.Done()
-	return list
+	}
+	return dst
 }
 
 ////////////////////////////////////////////////////////////////////////////////

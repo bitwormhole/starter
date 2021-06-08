@@ -1,4 +1,4 @@
-package runtime
+package loader
 
 import (
 	"errors"
@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/bitwormhole/starter/application"
+	"github.com/bitwormhole/starter/application/runtime"
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/lang"
 )
@@ -171,17 +172,20 @@ func (inst *RuntimeContextLoader) loadPropertiesInRes2() error {
 
 func (inst *RuntimeContextLoader) createRuntimeContext() error {
 
-	core := &contextRuntime{}
-	core.Init(nil)
+	builder := &runtime.RuntimeContextBuilder{}
 
-	core.appName = ""
-	core.appVersion = ""
-	core.time1 = 0
-	core.time2 = 0
-	core.uri = ""
-	core.resources = inst.config.GetResources()
+	builder.AppName = ""
+	builder.AppVersion = ""
+	builder.Time1 = 0
+	builder.Time2 = 0
+	builder.URL = ""
+	builder.Resources = inst.config.GetResources()
 
-	inst.context = core
+	context, err := builder.Create()
+	if err != nil {
+		return err
+	}
+	inst.context = context
 	return nil
 }
 
@@ -268,27 +272,31 @@ func (inst *RuntimeContextLoader) putComHolderToTable(table map[string]applicati
 
 func (inst *RuntimeContextLoader) loadSingletonComponents() error {
 
-	scopeWant := application.ScopeSingleton
-
-	injector := inst.context.InjectorScope(scopeWant)
 	context := inst.context
 	components := context.GetComponents()
 	table := components.Export(nil)
+	injector := inst.context.Injector()
+	injection, err := injector.OpenInjection(context)
+
+	if err != nil {
+		return err
+	}
 
 	for name := range table {
 		holder := table[name]
 		info := holder.GetInfo()
 		id := info.GetID()
 		scope := info.GetScope()
-		if (id == name) && (scope == scopeWant) {
-			_, err := injector.GetComponent("#" + name)
+		if (id == name) && (scope == application.ScopeSingleton) {
+			src := injection.Select("#" + name)
+			_, err := src.Read()
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	return injector.Done()
+	return injection.Close()
 }
 
 func (inst *RuntimeContextLoader) logDebugInfo() error {

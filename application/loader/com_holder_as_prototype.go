@@ -1,4 +1,4 @@
-package runtime
+package loader
 
 import (
 	"github.com/bitwormhole/starter/application"

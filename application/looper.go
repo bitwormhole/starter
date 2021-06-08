@@ -15,21 +15,19 @@ type Looper interface {
 ////////////////////////////////////////////////////////////////////////////////
 
 func tryGetLooper(context Context) Looper {
-
-	list := &looperList{}
-	in := context.Injector()
-	selector := "." + LooperClassName
-
-	in.Inject(selector).AsList().To(func(o lang.Object) bool {
-		looper, ok := o.(Looper)
+	dst := &looperList{}
+	src, err := context.GetComponentList("." + LooperClassName)
+	if err != nil {
+		return dst
+	}
+	for index := range src {
+		obj := src[index]
+		looper, ok := obj.(Looper)
 		if ok {
-			list.Add(looper)
+			dst.Add(looper)
 		}
-		return ok
-	})
-
-	in.Done()
-	return list
+	}
+	return dst
 }
 
 ////////////////////////////////////////////////////////////////////////////////

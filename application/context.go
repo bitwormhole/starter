@@ -36,12 +36,12 @@ type Context interface {
 	SetErrorHandler(h lang.ErrorHandler)
 	GetErrorHandler() lang.ErrorHandler
 	NewChild() Context
-	//	OpenCreationContext(scope ComponentScope) CreationContext
 
-	FindComponent(selector string) (lang.Object, error)
-	FindComponents(selector string) []lang.Object
+	GetComponent(selector string) (lang.Object, error)
+	GetComponentList(selector string) ([]lang.Object, error)
+
 	Injector() Injector
-	InjectorScope(scope ComponentScope) Injector
+	ComponentLoader() ComponentLoader
 }
 
 type SimpleContext interface {

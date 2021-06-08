@@ -4,7 +4,7 @@ import (
 	"embed"
 
 	"github.com/bitwormhole/starter/application"
-	"github.com/bitwormhole/starter/application/runtime"
+	"github.com/bitwormhole/starter/application/loader"
 	"github.com/bitwormhole/starter/collection"
 )
 
@@ -64,7 +64,7 @@ func (inst *appConfig) AddComponent(info application.ComponentInfo) {
 
 // GetLoader 返回加载器
 func (inst *appConfig) GetLoader() application.ContextLoader {
-	return &runtime.RuntimeContextLoader{}
+	return &loader.RuntimeContextLoader{}
 }
 
 // GetBuilder 返回构建器

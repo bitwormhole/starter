@@ -68,11 +68,17 @@ type ComponentHolderFilter func(name string, holder ComponentHolder) bool
 
 // ComponentLoader 用于加载组件的实例
 type ComponentLoader interface {
+	OpenLoading(context Context) (ComponentLoading, error)
+}
+
+// ComponentLoading  表示加载组件的会话
+type ComponentLoading interface {
 	io.Closer
+	Pool() lang.ReleasePool
+	Context() Context
+
 	Load(h ComponentHolder) (lang.Object, error)
 	LoadAll(h []ComponentHolder) ([]lang.Object, error)
-	GetReleasePool() lang.ReleasePool
-	GetContext() Context
 }
 
 // Components 接口表示一个组件的集合
