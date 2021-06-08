@@ -11,7 +11,6 @@ import (
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/application/runtime"
 	"github.com/bitwormhole/starter/collection"
-	"github.com/bitwormhole/starter/lang"
 )
 
 // RuntimeContextLoader 运行时上下文加载器
@@ -32,49 +31,55 @@ func (inst *RuntimeContextLoader) Load(config application.Configuration, args []
 	inst.context = nil
 	inst.args = args
 
-	tc := &lang.TryChain{}
-
-	tc.Try(func() error {
-		return inst.createRuntimeContext()
-
-	}).Try(func() error {
-		return inst.loadArguments()
-
-	}).Try(func() error {
-		return inst.loadEnv()
-
-	}).Try(func() error {
-		return inst.loadPropertiesInArgs()
-
-	}).Try(func() error {
-		return inst.loadPropertiesInRes1()
-
-	}).Try(func() error {
-		return inst.loadPropertiesInRes2()
-
-	}).Try(func() error {
-		return inst.prepareComInfoList()
-
-	}).Try(func() error {
-		return inst.doCreateComponents()
-
-	}).Try(func() error {
-		return inst.loadSingletonComponents()
-
-	}).Try(func() error {
-		return nil
-
-	}).Try(func() error {
-		// return inst.logDebugInfo()
-		return nil
-	})
-
-	err := tc.Result()
-	ctx := inst.context
+	err := inst.createRuntimeContext()
 	if err != nil {
-		ctx = nil
+		return nil, err
 	}
-	return ctx, err
+
+	err = inst.loadArguments()
+	if err != nil {
+		return nil, err
+	}
+
+	err = inst.loadEnv()
+	if err != nil {
+		return nil, err
+	}
+
+	err = inst.loadPropertiesInArgs()
+	if err != nil {
+		return nil, err
+	}
+
+	err = inst.loadPropertiesInRes1()
+	if err != nil {
+		return nil, err
+	}
+
+	err = inst.loadPropertiesInRes2()
+	if err != nil {
+		return nil, err
+	}
+
+	err = inst.prepareComInfoList()
+	if err != nil {
+		return nil, err
+	}
+
+	err = inst.doCreateComponents()
+	if err != nil {
+		return nil, err
+	}
+
+	err = inst.loadSingletonComponents()
+	if err != nil {
+		return nil, err
+	}
+
+	// return inst.logDebugInfo()
+
+	ctx := inst.context
+	return ctx, nil
 }
 
 func (inst *RuntimeContextLoader) loadArguments() error {
@@ -180,6 +185,7 @@ func (inst *RuntimeContextLoader) createRuntimeContext() error {
 	builder.Time2 = 0
 	builder.URL = ""
 	builder.Resources = inst.config.GetResources()
+	builder.ComLoader = &StandardComponentLoader{}
 
 	context, err := builder.Create()
 	if err != nil {
@@ -295,6 +301,11 @@ func (inst *RuntimeContextLoader) loadSingletonComponents() error {
 			}
 		}
 	}
+
+	pool1 := injection.Pool()
+	pool2 := context.GetReleasePool()
+	ppbinding := &runtime.PoolPairBinding{}
+	ppbinding.Init(pool1, pool2)
 
 	return injection.Close()
 }
