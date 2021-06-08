@@ -39,6 +39,10 @@ func (inst *innerInjection) init(loading application.ComponentLoading) applicati
 	return inst
 }
 
+func (inst *innerInjection) OnError(err error) {
+	inst.loading.OnError(err)
+}
+
 func (inst *innerInjection) Pool() lang.ReleasePool {
 	return inst.pool
 }

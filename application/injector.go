@@ -22,6 +22,7 @@ type InjectionTarget interface {
 
 type Injection interface {
 	io.Closer
+	lang.ErrorHandler
 
 	Context() Context
 	Pool() lang.ReleasePool

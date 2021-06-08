@@ -39,6 +39,7 @@ type standardComponentsLoading struct {
 	comTable      map[string]*comHolderProxy
 	comIndexCount int
 	closed        bool
+	lastError     error
 }
 
 func (inst *standardComponentsLoading) open(contextRT application.Context) (application.ComponentLoading, error) {
@@ -59,6 +60,13 @@ func (inst *standardComponentsLoading) open(contextRT application.Context) (appl
 
 	loadingCtx.init(inst)
 	return inst, nil
+}
+
+func (inst *standardComponentsLoading) OnError(err error) {
+	if err == nil {
+		return
+	}
+	inst.lastError = err
 }
 
 func (inst *standardComponentsLoading) Pool() lang.ReleasePool {
@@ -119,6 +127,11 @@ func (inst *standardComponentsLoading) LoadAll(src []application.ComponentHolder
 }
 
 func (inst *standardComponentsLoading) Close() error {
+
+	lastErr := inst.lastError
+	if lastErr != nil {
+		return lastErr
+	}
 
 	if inst.closed {
 		return nil
@@ -301,6 +314,10 @@ type standardComponentsLoadingFacade struct {
 
 func (inst *standardComponentsLoadingFacade) init() application.ComponentLoading {
 	return inst
+}
+
+func (inst *standardComponentsLoadingFacade) OnError(err error) {
+	inst.inner.OnError(err)
 }
 
 func (inst *standardComponentsLoadingFacade) Pool() lang.ReleasePool {

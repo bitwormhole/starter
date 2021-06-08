@@ -74,6 +74,8 @@ type ComponentLoader interface {
 // ComponentLoading  表示加载组件的会话
 type ComponentLoading interface {
 	io.Closer
+	lang.ErrorHandler
+
 	Pool() lang.ReleasePool
 	Context() Context
 
