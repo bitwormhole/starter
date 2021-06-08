@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/bitwormhole/starter/application"
@@ -55,39 +56,112 @@ func (inst *innerInjection) Context() application.Context {
 	return inst.context
 }
 
-func (inst *innerInjection) Select(selector string) application.InjectionSource {
-
-	aslist := false
-	source := &innerInjectionSource{}
-	source.init(selector)
-
-	if strings.HasPrefix(selector, "#") {
-		aslist = false
-	} else {
-		aslist = true
+func (inst *innerInjection) loadAllComponents(holders []application.ComponentHolder, source *innerInjectionSource) {
+	comlist, err := inst.loading.LoadAll(holders)
+	if err != nil {
+		inst.loading.OnError(err)
+		return
 	}
+	for index := range comlist {
+		obj := comlist[index]
+		source.add(obj)
+	}
+}
 
-	if aslist {
-		holder, err := inst.context.GetComponents().GetComponent(selector)
+func (inst *innerInjection) selectByID(selector string, source *innerInjectionSource) {
+	source.init(selector, "[id]")
+	holder, err := inst.context.GetComponents().GetComponent(selector)
+	inst.loading.OnError(err)
+	if err == nil {
+		com, err := inst.loading.Load(holder)
 		inst.loading.OnError(err)
 		if err == nil {
-			com, err := inst.loading.Load(holder)
-			inst.loading.OnError(err)
-			if err == nil {
-				source.add(com)
-			}
-		}
-	} else {
-		holders := inst.context.GetComponents().GetComponents(selector)
-		comlist, err := inst.loading.LoadAll(holders)
-		inst.loading.OnError(err)
-		for index := range comlist {
-			com := comlist[index]
 			source.add(com)
 		}
 	}
+}
 
-	source.reset()
+func (inst *innerInjection) selectAll(selector string, source *innerInjectionSource) {
+	source.init(selector, "[*]")
+	allcom := inst.context.GetComponents()
+	holders := allcom.GetComponentsByFilter(func(name string, holder application.ComponentHolder) bool {
+		info := holder.GetInfo()
+		if name != info.GetID() {
+			return false
+		}
+		return true
+	})
+	inst.loadAllComponents(holders, source)
+}
+
+func (inst *innerInjection) selectByClass(selector string, source *innerInjectionSource) {
+	source.init(selector, "[class]")
+	holders := inst.context.GetComponents().GetComponents(selector)
+	inst.loadAllComponents(holders, source)
+}
+
+func (inst *innerInjection) selectByScope(selector string, source *innerInjectionSource, scope application.ComponentScope) {
+	source.init(selector, "[*.scope]")
+	allcom := inst.context.GetComponents()
+	holders := allcom.GetComponentsByFilter(func(name string, holder application.ComponentHolder) bool {
+		info := holder.GetInfo()
+		if name != info.GetID() {
+			return false
+		}
+		scope2 := info.GetScope()
+		return scope2 == scope
+	})
+	inst.loadAllComponents(holders, source)
+}
+
+func (inst *innerInjection) selectByProperty(selector string, source *innerInjectionSource) {
+	i1 := strings.IndexByte(selector, '{')
+	i2 := strings.LastIndexByte(selector, '}')
+	if (0 < i1) && (i1 < i2) {
+		key := selector[i1+1 : i2]
+		value, err := inst.context.GetProperties().GetPropertyRequired(key)
+		if err == nil {
+			source.init(selector, value)
+		} else {
+			inst.loading.OnError(err)
+		}
+	} else {
+		err := errors.New("bad property selector:" + selector)
+		inst.loading.OnError(err)
+	}
+}
+
+func (inst *innerInjection) Select(selector string) application.InjectionSource {
+
+	source := &innerInjectionSource{}
+
+	if selector == "*" {
+		// All
+		inst.selectAll(selector, source)
+
+	} else if strings.HasPrefix(selector, "#") {
+		// ID
+		inst.selectByID(selector, source)
+
+	} else if strings.HasPrefix(selector, ".") {
+		// Class
+		inst.selectByClass(selector, source)
+
+	} else if strings.HasPrefix(selector, "${") && strings.HasSuffix(selector, "}") {
+		// Property
+		inst.selectByProperty(selector, source)
+
+	} else if selector == "*.scope(singleton)" {
+		// *.Scope
+		inst.selectByScope(selector, source, application.ScopeSingleton)
+
+	} else {
+		source.init(selector, "[unsupported]")
+		err := errors.New("unsupported selector:" + selector)
+		inst.loading.OnError(err)
+	}
+
+	source.prepare()
 	return source
 }
 
@@ -103,13 +177,15 @@ type innerInjectionSource struct {
 	count    int
 	ptr      int
 	selector string
+	text     string
 }
 
-func (inst *innerInjectionSource) init(selector string) application.InjectionSource {
+func (inst *innerInjectionSource) init(selector string, value string) application.InjectionSource {
 	inst.items = make([]lang.Object, 0)
 	inst.selector = selector
 	inst.ptr = 0
 	inst.count = 0
+	inst.text = value
 	return inst
 }
 
@@ -120,7 +196,11 @@ func (inst *innerInjectionSource) add(o lang.Object) {
 	inst.items = append(inst.items, o)
 }
 
-func (inst *innerInjectionSource) reset() {
+func (inst *innerInjectionSource) setText(text string) {
+	inst.text = text
+}
+
+func (inst *innerInjectionSource) prepare() {
 	inst.ptr = 0
 	inst.count = len(inst.items)
 }
@@ -158,7 +238,38 @@ func (inst *innerInjectionSource) Read() (lang.Object, error) {
 	}
 }
 
+func (inst *innerInjectionSource) ReadInt() (int, error) {
+	n, err := strconv.ParseInt(inst.text, 0, 32)
+	return int(n), err
+}
+
+func (inst *innerInjectionSource) ReadInt64() (int64, error) {
+	return strconv.ParseInt(inst.text, 0, 32)
+}
+
+func (inst *innerInjectionSource) ReadFloat32() (float32, error) {
+	n, err := strconv.ParseFloat(inst.text, 32)
+	return float32(n), err
+}
+
+func (inst *innerInjectionSource) ReadFloat64() (float64, error) {
+	n, err := strconv.ParseFloat(inst.text, 64)
+	return n, err
+}
+
+func (inst *innerInjectionSource) ReadBool() (bool, error) {
+	return strconv.ParseBool(inst.text)
+}
+
+func (inst *innerInjectionSource) ReadString() (string, error) {
+	return inst.text, nil
+}
+
 func (inst *innerInjectionSource) Close() error {
-	inst.init("[closed]")
+	inst.text = ""
+	inst.selector = ""
+	inst.items = []lang.Object{}
+	inst.count = 0
+	inst.ptr = 0
 	return nil
 }

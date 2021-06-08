@@ -12,7 +12,14 @@ type InjectionSource interface {
 	Count() int
 	Selector() string
 	HasMore() bool
+
 	Read() (lang.Object, error)
+	ReadString() (string, error)
+	ReadInt() (int, error)
+	ReadInt64() (int64, error)
+	ReadFloat32() (float32, error)
+	ReadFloat64() (float64, error)
+	ReadBool() (bool, error)
 }
 
 type InjectionTarget interface {
