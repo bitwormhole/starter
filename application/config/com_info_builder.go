@@ -110,8 +110,12 @@ func (inst *ComInfoBuilder) CreateTo(cb application.ConfigBuilder) error {
 func (inst *ComInfoBuilder) parseScope(str string) (application.ComponentScope, error) {
 	str = strings.TrimSpace(str)
 	str = strings.ToLower(str)
-	if str == "prototype" {
+	if str == "" {
+		return application.ScopeSingleton, nil
+
+	} else if str == "prototype" {
 		return application.ScopePrototype, nil
+
 	} else if str == "singleton" {
 		return application.ScopeSingleton, nil
 	}
