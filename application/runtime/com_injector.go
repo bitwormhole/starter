@@ -239,12 +239,20 @@ func (inst *innerInjectionSource) Read() (lang.Object, error) {
 }
 
 func (inst *innerInjectionSource) ReadInt() (int, error) {
-	n, err := strconv.ParseInt(inst.text, 0, 32)
+	n, err := strconv.ParseInt(inst.text, 0, 0)
 	return int(n), err
 }
 
+func (inst *innerInjectionSource) ReadInt32() (int32, error) {
+	n, err := strconv.ParseInt(inst.text, 0, 32)
+	if err != nil {
+		return 0, err
+	}
+	return int32(n), nil
+}
+
 func (inst *innerInjectionSource) ReadInt64() (int64, error) {
-	return strconv.ParseInt(inst.text, 0, 32)
+	return strconv.ParseInt(inst.text, 0, 64)
 }
 
 func (inst *innerInjectionSource) ReadFloat32() (float32, error) {

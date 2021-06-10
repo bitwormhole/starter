@@ -16,6 +16,7 @@ type InjectionSource interface {
 	Read() (lang.Object, error)
 	ReadString() (string, error)
 	ReadInt() (int, error)
+	ReadInt32() (int32, error)
 	ReadInt64() (int64, error)
 	ReadFloat32() (float32, error)
 	ReadFloat64() (float64, error)
