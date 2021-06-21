@@ -46,6 +46,11 @@ func (inst *RuntimeContextLoader) Load(config application.Configuration, args []
 		return nil, err
 	}
 
+	err = inst.loadDefaultProperties()
+	if err != nil {
+		return nil, err
+	}
+
 	err = inst.loadPropertiesInArgs()
 	if err != nil {
 		return nil, err
@@ -112,6 +117,17 @@ func (inst *RuntimeContextLoader) loadEnv() error {
 		}
 	}
 	dst.Import(table)
+	return nil
+}
+
+func (inst *RuntimeContextLoader) loadDefaultProperties() error {
+	src := inst.config.GetDefaultProperties()
+	dst := inst.context.GetProperties()
+	table := src.Export(nil)
+	for key := range table {
+		val := table[key]
+		dst.SetProperty(key, val)
+	}
 	return nil
 }
 

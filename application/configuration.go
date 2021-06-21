@@ -8,6 +8,7 @@ type Configuration interface {
 	GetComponents() []ComponentInfo
 	GetResources() collection.Resources
 	GetEnvironment() collection.Environment
+	GetDefaultProperties() collection.Properties
 	IsEnableLoadPropertiesFromArguments() bool
 }
 
@@ -23,6 +24,8 @@ type ConfigBuilder interface {
 
 	SetEnableLoadPropertiesFromArguments(enable bool)
 	IsEnableLoadPropertiesFromArguments() bool
+
+	DefaultProperties() collection.Properties
 
 	Create() Configuration
 }

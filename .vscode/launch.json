@@ -44,7 +44,7 @@
             "env": {},
             "args": [
                 "demo4gin",
-                "",
+                "-test.v",
                 "configen|demo",
                 "b",
                 "--application.profiles.active=debug",

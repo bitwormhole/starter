@@ -15,11 +15,13 @@ type appConfig struct {
 	// implements Configuration
 	components                   []application.ComponentInfo
 	resources                    collection.Resources
+	defaultProperties            collection.Properties
 	enableLoadPropertiesFromArgs bool
 }
 
 func (inst *appConfig) init() application.ConfigBuilder {
 	inst.components = []application.ComponentInfo{}
+	inst.defaultProperties = collection.CreateProperties()
 	inst.enableLoadPropertiesFromArgs = true
 	return inst
 }
@@ -78,6 +80,14 @@ func (inst *appConfig) SetResFS(fs *embed.FS, prefix string) {
 		fs:     fs,
 		prefix: prefix,
 	}
+}
+
+func (inst *appConfig) DefaultProperties() collection.Properties {
+	return inst.defaultProperties
+}
+
+func (inst *appConfig) GetDefaultProperties() collection.Properties {
+	return inst.defaultProperties
 }
 
 func (inst *appConfig) SetResources(res collection.Resources) {
