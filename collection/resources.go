@@ -7,4 +7,7 @@ type Resources interface {
 	GetText(path string) (string, error)
 	GetBinary(path string) ([]byte, error)
 	GetReader(path string) (io.ReadCloser, error)
+
+	// 列出所有资源的路径
+	All() []string
 }

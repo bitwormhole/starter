@@ -17,6 +17,8 @@ func Run(cb application.ConfigBuilder) error {
 		return err
 	}
 
+	context.GetResources().All()
+
 	err = application.Loop(context)
 	if err != nil {
 		return err

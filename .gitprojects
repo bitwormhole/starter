@@ -1,0 +1,7 @@
+[project "1"]
+    name=starter
+    project-dir=./
+    project-file=./go.mod
+    title=starter
+    description=一个用 golang 实现的依赖注入框架
+    type=go/mod

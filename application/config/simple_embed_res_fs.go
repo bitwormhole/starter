@@ -2,6 +2,7 @@ package config
 
 import (
 	"embed"
+	"errors"
 	"io"
 	"strings"
 
@@ -58,9 +59,64 @@ func (inst *simpleEmbedResFS) GetReader(path string) (io.ReadCloser, error) {
 	return nil, nil
 }
 
+func (inst *simpleEmbedResFS) All() []string {
+	walker := &simpleEmbedTreeWalker{
+		fs:     inst.fs,
+		prefix: inst.prefix,
+	}
+	return walker.walk()
+}
+
 func CreateEmbedFsResources(fs *embed.FS, pathPrefix string) collection.Resources {
 	return &simpleEmbedResFS{
 		fs:     fs,
 		prefix: pathPrefix,
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+type simpleEmbedTreeWalker struct {
+	fs      *embed.FS
+	prefix  string
+	results []string
+}
+
+func (inst *simpleEmbedTreeWalker) walk() []string {
+	inst.results = make([]string, 0)
+	inst.walkWithDir(inst.prefix, 99)
+	return inst.results
+}
+
+func (inst *simpleEmbedTreeWalker) walkWithDir(path string, limit int) error {
+	if limit < 0 {
+		return errors.New("path is too deep: " + path)
+	}
+	items, err := inst.fs.ReadDir(path)
+	if err != nil {
+		return err
+	}
+	for index := range items {
+		item := items[index]
+		name := item.Name()
+		t := item.Type()
+		if item.IsDir() {
+			err := inst.walkWithDir(path+"/"+name, limit-1)
+			if err != nil {
+				return err
+			}
+		} else if t.IsRegular() {
+			inst.onFile(path + "/" + name)
+		}
+	}
+	return nil
+}
+
+func (inst *simpleEmbedTreeWalker) onFile(path string) {
+	len1 := len(inst.prefix)
+	path = path[len1:]
+	inst.results = append(inst.results, path)
+	// fmt.Println("onFile: " + path)
+}
+
+////////////////////////////////////////////////////////////////////////////////
