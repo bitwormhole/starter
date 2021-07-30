@@ -11,6 +11,7 @@ import (
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/application/runtime"
 	"github.com/bitwormhole/starter/collection"
+	"github.com/bitwormhole/starter/io/fs"
 )
 
 // RuntimeContextLoader 运行时上下文加载器
@@ -62,6 +63,11 @@ func (inst *RuntimeContextLoader) Load(config application.Configuration, args []
 	}
 
 	err = inst.loadPropertiesInRes2()
+	if err != nil {
+		return nil, err
+	}
+
+	err = inst.loadPropertiesInLocalFile()
 	if err != nil {
 		return nil, err
 	}
@@ -189,6 +195,28 @@ func (inst *RuntimeContextLoader) loadPropertiesInRes2() error {
 	name := "/application-" + profile + ".properties"
 	log.Println(key+":", profile)
 	return inst.loadPropertiesInRes(name)
+}
+
+func (inst *RuntimeContextLoader) loadPropertiesInLocalFile() error {
+	const undef = ""
+	const key = "application.properties"
+	path := inst.context.GetProperties().GetProperty(key, undef)
+	if path == undef {
+		return nil
+	}
+	// read text
+	file := fs.Default().GetPath(path)
+	text, err := file.GetIO().ReadText()
+	if err != nil {
+		return err
+	}
+	// load properties
+	properties := inst.context.GetProperties()
+	properties, err = collection.ParseProperties(text, properties)
+	if err != nil {
+		return err
+	}
+	return inst.loadPropertiesInArgs()
 }
 
 func (inst *RuntimeContextLoader) createRuntimeContext() error {
