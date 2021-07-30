@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/bitwormhole/starter/collection"
+	"github.com/bitwormhole/starter/util"
 )
 
 type simpleEmbedResFS struct {
@@ -16,23 +17,21 @@ type simpleEmbedResFS struct {
 
 func (inst *simpleEmbedResFS) computeResPath(path string) string {
 
-	tmp := inst.prefix + "/" + path
-	builder := &strings.Builder{}
-	tmp = strings.ReplaceAll(tmp, "\\", "/")
-	array := strings.Split(tmp, "/")
+	const uriToken = ":/"
+	uriTokenIndex := strings.Index(path, uriToken)
+	uriTokenLength := len(uriToken)
 
-	for index := range array {
-		part := array[index]
-		part = strings.TrimSpace(part)
-		if part == "" {
-			continue
-		}
-		if builder.Len() > 0 {
-			builder.WriteString("/")
-		}
-		builder.WriteString(part)
+	if uriTokenIndex > 0 {
+		// 去掉URI.path之前的部分
+		path = path[uriTokenIndex+uriTokenLength:]
 	}
 
+	builder := &util.PathBuilder{}
+	builder.EnableRoot(false)
+	builder.EnableDoubleDot(false)
+	builder.EnableTrim(true)
+	builder.AppendPath(inst.prefix)
+	builder.AppendPath(path)
 	return builder.String()
 }
 
@@ -115,7 +114,7 @@ func (inst *simpleEmbedTreeWalker) walkWithDir(path string, limit int) error {
 func (inst *simpleEmbedTreeWalker) onFile(path string) {
 	len1 := len(inst.prefix)
 	path = path[len1:]
-	inst.results = append(inst.results, path)
+	inst.results = append(inst.results, "res://"+path)
 	// fmt.Println("onFile: " + path)
 }
 
