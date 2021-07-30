@@ -11,20 +11,7 @@ func Run(cb application.ConfigBuilder) error {
 
 	Config(cb)
 
-	configuration := cb.Create()
-	context, err := application.Run(configuration, os.Args)
-	if err != nil {
-		return err
-	}
-
-	context.GetResources().All()
-
-	err = application.Loop(context)
-	if err != nil {
-		return err
-	}
-
-	code, err := application.Exit(context)
+	code, err := application.RunAndLoop(cb.Create())
 	if err != nil {
 		return err
 	}

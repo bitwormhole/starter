@@ -1,5 +1,7 @@
 package application
 
+import "os"
+
 // Run 函数启动一个应用实例，返回应用上下文
 func Run(config Configuration, args []string) (Context, error) {
 	return config.GetLoader().Load(config, args)
@@ -30,5 +32,27 @@ func Exit(context Context) (int, error) {
 	}
 
 	code := exitcodegen.ExitCode()
+	return code, nil
+}
+
+// 依次调用 Run(), Loop(), Exit()
+func RunAndLoop(config Configuration) (int, error) {
+
+	args := os.Args
+	context, err := Run(config, args)
+	if err != nil {
+		return -1, err
+	}
+
+	err = Loop(context)
+	if err != nil {
+		return -1, err
+	}
+
+	code, err := Exit(context)
+	if err != nil {
+		return -1, err
+	}
+
 	return code, nil
 }
