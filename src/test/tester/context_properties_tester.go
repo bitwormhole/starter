@@ -9,9 +9,14 @@ import (
 
 type ContextPropertiesTester struct {
 	AppContext application.Context
+	Enable     bool
 }
 
 func (inst *ContextPropertiesTester) Run() error {
+
+	if !inst.Enable {
+		return nil
+	}
 
 	app := inst.AppContext
 	props := app.GetProperties()

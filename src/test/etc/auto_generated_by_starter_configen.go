@@ -95,10 +95,12 @@ func (inst *theContextPropertiesTester) __inject__(context application.Context) 
 
 	// from getters
 	inst.AppContext=inst.__get_AppContext__(injection, "context")
+	inst.Enable=inst.__get_Enable__(injection, "${test.enable}")
 
 
 	// to instance
 	instance.AppContext=inst.AppContext
+	instance.Enable=inst.Enable
 
 
 	// invoke custom inject method
@@ -109,6 +111,16 @@ func (inst *theContextPropertiesTester) __inject__(context application.Context) 
 
 func (inst * theContextPropertiesTester) __get_AppContext__(injection application.Injection,selector string) application.Context {
 	return injection.Context()
+}
+
+func (inst * theContextPropertiesTester) __get_Enable__(injection application.Injection,selector string) bool {
+	reader := injection.Select(selector)
+	defer reader.Close()
+	value, err := reader.ReadBool()
+	if err != nil {
+		injection.OnError(err)
+	}
+	return value
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,10 +141,12 @@ func (inst *theContextResourcesTester) __inject__(context application.Context) e
 
 	// from getters
 	inst.AppContext=inst.__get_AppContext__(injection, "context")
+	inst.Enable=inst.__get_Enable__(injection, "${test.enable}")
 
 
 	// to instance
 	instance.AppContext=inst.AppContext
+	instance.Enable=inst.Enable
 
 
 	// invoke custom inject method
@@ -143,5 +157,15 @@ func (inst *theContextResourcesTester) __inject__(context application.Context) e
 
 func (inst * theContextResourcesTester) __get_AppContext__(injection application.Injection,selector string) application.Context {
 	return injection.Context()
+}
+
+func (inst * theContextResourcesTester) __get_Enable__(injection application.Injection,selector string) bool {
+	reader := injection.Select(selector)
+	defer reader.Close()
+	value, err := reader.ReadBool()
+	if err != nil {
+		injection.OnError(err)
+	}
+	return value
 }
 

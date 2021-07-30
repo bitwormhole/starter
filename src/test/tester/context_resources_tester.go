@@ -8,9 +8,14 @@ import (
 
 type ContextResourcesTester struct {
 	AppContext application.Context
+	Enable     bool
 }
 
 func (inst *ContextResourcesTester) Run() error {
+
+	if !inst.Enable {
+		return nil
+	}
 
 	res := inst.AppContext.GetResources()
 	all := res.All()

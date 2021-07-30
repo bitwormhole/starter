@@ -133,7 +133,7 @@ func (inst *innerInjection) selectByProperty(selector string, source *innerInjec
 
 func (inst *innerInjection) Select(selector string) application.InjectionSource {
 
-	source := &innerInjectionSource{}
+	source := &innerInjectionSource{selector: selector}
 
 	if selector == "*" {
 		// All
@@ -240,33 +240,47 @@ func (inst *innerInjectionSource) Read() (lang.Object, error) {
 
 func (inst *innerInjectionSource) ReadInt() (int, error) {
 	n, err := strconv.ParseInt(inst.text, 0, 0)
+	err = inst.formatError(err)
 	return int(n), err
 }
 
 func (inst *innerInjectionSource) ReadInt32() (int32, error) {
 	n, err := strconv.ParseInt(inst.text, 0, 32)
-	if err != nil {
-		return 0, err
-	}
+	err = inst.formatError(err)
 	return int32(n), nil
 }
 
 func (inst *innerInjectionSource) ReadInt64() (int64, error) {
-	return strconv.ParseInt(inst.text, 0, 64)
+	n, err := strconv.ParseInt(inst.text, 0, 64)
+	err = inst.formatError(err)
+	return n, err
 }
 
 func (inst *innerInjectionSource) ReadFloat32() (float32, error) {
 	n, err := strconv.ParseFloat(inst.text, 32)
+	err = inst.formatError(err)
 	return float32(n), err
 }
 
 func (inst *innerInjectionSource) ReadFloat64() (float64, error) {
 	n, err := strconv.ParseFloat(inst.text, 64)
+	err = inst.formatError(err)
 	return n, err
 }
 
 func (inst *innerInjectionSource) ReadBool() (bool, error) {
-	return strconv.ParseBool(inst.text)
+	value, err := strconv.ParseBool(inst.text)
+	err = inst.formatError(err)
+	return value, err
+}
+
+func (inst *innerInjectionSource) formatError(err error) error {
+	if err == nil {
+		return nil
+	}
+	text1 := err.Error()
+	text2 := inst.selector
+	return errors.New(text1 + ", selector=" + text2)
 }
 
 func (inst *innerInjectionSource) ReadString() (string, error) {
@@ -275,7 +289,7 @@ func (inst *innerInjectionSource) ReadString() (string, error) {
 
 func (inst *innerInjectionSource) Close() error {
 	inst.text = ""
-	inst.selector = ""
+	// inst.selector = ""
 	inst.items = []lang.Object{}
 	inst.count = 0
 	inst.ptr = 0
