@@ -11,6 +11,5 @@ import (
 var resources embed.FS
 
 func GetResources() collection.Resources {
-	const basePath = "src/main/resources"
-	return config.CreateEmbedFsResources(&resources, basePath)
+	return config.CreateEmbedFsResources(&resources, "src/main/resources")
 }

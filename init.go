@@ -22,6 +22,42 @@ type innerInitializer struct {
 	cfgBuilder application.ConfigBuilder
 }
 
+// public
+
+func (inst *innerInitializer) EmbedResources(fs *embed.FS, path string) application.Initializer {
+	res := config.CreateEmbedFsResources(fs, path)
+	inst.cfgBuilder.SetResources(res)
+	return inst
+}
+
+func (inst *innerInitializer) MountResources(res collection.Resources, path string) application.Initializer {
+	inst.cfgBuilder.SetResources(res)
+	return inst
+}
+
+func (inst *innerInitializer) Use(module application.Module) application.Initializer {
+	if module == nil {
+		return inst
+	}
+	name := module.GetName()
+	older := inst.modules[name]
+	if older != nil {
+		if older.GetRevision() >= module.GetRevision() {
+			return inst
+		}
+	}
+	inst.modules[name] = module
+	inst.useDependencies(module.GetDependencies())
+	return inst
+}
+
+func (inst *innerInitializer) Run() {
+	err := inst.inTryRun()
+	if err != nil {
+		panic(err)
+	}
+}
+
 // private
 
 func (inst *innerInitializer) init() application.Initializer {
@@ -81,38 +117,4 @@ func (inst *innerInitializer) inTryRun() error {
 	return nil
 }
 
-// public
-
-func (inst *innerInitializer) EmbedResources(fs *embed.FS, path string) application.Initializer {
-	res := config.CreateEmbedFsResources(fs, path)
-	inst.cfgBuilder.SetResources(res)
-	return inst
-}
-
-func (inst *innerInitializer) MountResources(res collection.Resources, path string) application.Initializer {
-	inst.cfgBuilder.SetResources(res)
-	return inst
-}
-
-func (inst *innerInitializer) Use(module application.Module) application.Initializer {
-	if module == nil {
-		return inst
-	}
-	name := module.GetName()
-	older := inst.modules[name]
-	if older != nil {
-		if older.GetRevision() >= module.GetRevision() {
-			return inst
-		}
-	}
-	inst.modules[name] = module
-	inst.useDependencies(module.GetDependencies())
-	return inst
-}
-
-func (inst *innerInitializer) Run() {
-	err := inst.inTryRun()
-	if err != nil {
-		panic(err)
-	}
-}
+////////////////////////////////////////////////////////////////////////////////

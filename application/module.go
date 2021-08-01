@@ -8,21 +8,21 @@ type Module interface {
 	Apply(cb ConfigBuilder) error
 }
 
-type ModuleApplyFunc func(cb ConfigBuilder) error
+type OnMountFunc func(cb ConfigBuilder) error
 
-type ModuleDefine struct {
+type DefineModule struct {
 	Name         string
 	Version      string
 	Revision     int
 	Dependencies []Module
-	HandleApply  ModuleApplyFunc
+	OnMount      OnMountFunc
 }
 
-func (inst *ModuleDefine) __impl__() Module {
+func (inst *DefineModule) __impl__() Module {
 	return inst
 }
 
-func (inst *ModuleDefine) GetDependencies() []Module {
+func (inst *DefineModule) GetDependencies() []Module {
 	src := inst.Dependencies
 	dst := make([]Module, 0)
 	if src == nil {
@@ -37,18 +37,18 @@ func (inst *ModuleDefine) GetDependencies() []Module {
 	return dst
 }
 
-func (inst *ModuleDefine) GetName() string {
+func (inst *DefineModule) GetName() string {
 	return inst.Name
 }
 
-func (inst *ModuleDefine) GetRevision() int {
+func (inst *DefineModule) GetRevision() int {
 	return inst.Revision
 }
 
-func (inst *ModuleDefine) GetVersion() string {
+func (inst *DefineModule) GetVersion() string {
 	return inst.Version
 }
 
-func (inst *ModuleDefine) Apply(cb ConfigBuilder) error {
-	return inst.HandleApply(cb)
+func (inst *DefineModule) Apply(cb ConfigBuilder) error {
+	return inst.OnMount(cb)
 }

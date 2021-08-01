@@ -3,11 +3,11 @@ package srctestgo
 import (
 	"testing"
 
-	"github.com/bitwormhole/starter"
+	starter "github.com/bitwormhole/starter"
 )
 
 func TestMain(t *testing.T) {
-	ai := starter.Init().MountResources(starter.GetResources(), "/")
-	ai.Use(starter.Module())
-	ai.Run()
+	appinit := starter.Init().MountResources(starter.GetResources(), "/")
+	appinit.Use(starter.Module())
+	appinit.Run()
 }
