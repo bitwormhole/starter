@@ -6,7 +6,7 @@ import (
 	"github.com/bitwormhole/starter/util/configenchecker"
 )
 
-func Config(cb application.ConfigBuilder) error {
+func configure(cb application.ConfigBuilder) error {
 
 	dp := cb.DefaultProperties()
 	dp.SetProperty("configen.checker.enable", "false")

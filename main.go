@@ -10,5 +10,5 @@ import (
 var resources embed.FS
 
 func main() {
-	starter.Init().EmbedResources(&resources, "src/main/resources").Run()
+	starter.InitApp().EmbedResources(&resources, "src/main/resources").Run()
 }

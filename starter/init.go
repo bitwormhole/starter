@@ -8,13 +8,14 @@ import (
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/application/config"
 	"github.com/bitwormhole/starter/collection"
+	etc "github.com/bitwormhole/starter/etc/starter"
 )
 
-// Init  开始初始化应用程序
-func Init() application.Initializer {
+// InitApp 开始初始化应用程序
+func InitApp() application.Initializer {
 	inst := &innerInitializer{}
 	i := inst.init()
-	i.Use(Module())
+	i.Use(etc.Module())
 	return i
 }
 
