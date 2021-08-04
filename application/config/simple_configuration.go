@@ -16,12 +16,14 @@ type appConfig struct {
 	components                   []application.ComponentInfo
 	resources                    collection.Resources
 	defaultProperties            collection.Properties
+	defaultAttributes            collection.Attributes
 	enableLoadPropertiesFromArgs bool
 }
 
 func (inst *appConfig) init() application.ConfigBuilder {
 	inst.components = []application.ComponentInfo{}
 	inst.defaultProperties = collection.CreateProperties()
+	inst.defaultAttributes = collection.CreateAttributes()
 	inst.enableLoadPropertiesFromArgs = true
 	return inst
 }
@@ -50,12 +52,21 @@ func (inst *appConfig) GetEnvironment() collection.Environment {
 	return nil
 }
 
+// GetAttributes 用于atts
+func (inst *appConfig) GetAttributes() collection.Attributes {
+	return inst.defaultAttributes
+}
+
 func (inst *appConfig) IsEnableLoadPropertiesFromArguments() bool {
 	return inst.enableLoadPropertiesFromArgs
 }
 
 func (inst *appConfig) SetEnableLoadPropertiesFromArguments(enable bool) {
 	inst.enableLoadPropertiesFromArgs = enable
+}
+
+func (inst *appConfig) SetAttribute(name string, value interface{}) {
+	inst.defaultAttributes.SetAttribute(name, value)
 }
 
 // AddComponent 注册一个组件
@@ -90,6 +101,10 @@ func (inst *appConfig) GetDefaultProperties() collection.Properties {
 	return inst.defaultProperties
 }
 
+func (inst *appConfig) GetDefaultAttributes() collection.Attributes {
+	return inst.defaultAttributes
+}
+
 func (inst *appConfig) SetResources(res collection.Resources) {
 	inst.resources = res
 }
@@ -102,12 +117,14 @@ func (inst *appConfig) GetResources() collection.Resources {
 ////////////////////////////////////////////////////////////////////////////////
 // Builder
 
+// NewBuilder 新建配置建造器
 func NewBuilder() application.ConfigBuilder {
 	cfg := &appConfig{}
 	cb := cfg.init()
 	return cb
 }
 
+// NewBuilderRes 新建配置建造器，并附带指定的资源
 func NewBuilderRes(res collection.Resources) application.ConfigBuilder {
 	cfg := &appConfig{}
 	cb := cfg.init()
@@ -115,6 +132,7 @@ func NewBuilderRes(res collection.Resources) application.ConfigBuilder {
 	return cb
 }
 
+// NewBuilderFS  新建配置建造器，并附带指定的资源文件
 func NewBuilderFS(fs *embed.FS, prefix string) application.ConfigBuilder {
 	cfg := &appConfig{}
 	cb := cfg.init()

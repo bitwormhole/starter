@@ -39,6 +39,11 @@ func (inst *innerInitializer) MountResources(res collection.Resources, path stri
 	return inst
 }
 
+func (inst *innerInitializer) SetAttribute(name string, value interface{}) application.Initializer {
+	inst.cfgBuilder.SetAttribute(name, value)
+	return inst
+}
+
 func (inst *innerInitializer) Use(module application.Module) application.Initializer {
 	if module == nil {
 		return inst

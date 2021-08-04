@@ -72,6 +72,11 @@ func (inst *RuntimeContextLoader) Load(config application.Configuration, args []
 		return nil, err
 	}
 
+	err = inst.loadAtts()
+	if err != nil {
+		return nil, err
+	}
+
 	err = inst.prepareComInfoList()
 	if err != nil {
 		return nil, err
@@ -195,6 +200,17 @@ func (inst *RuntimeContextLoader) loadPropertiesInRes2() error {
 	name := "/application-" + profile + ".properties"
 	log.Println(key+":", profile)
 	return inst.loadPropertiesInRes(name)
+}
+
+func (inst *RuntimeContextLoader) loadAtts() error {
+	src := inst.config.GetAttributes()
+	dst := inst.context.GetAttributes()
+	if src == nil || dst == nil {
+		return errors.New("ptr==nil")
+	}
+	table := src.Export(nil)
+	dst.Import(table)
+	return nil
 }
 
 func (inst *RuntimeContextLoader) loadPropertiesInLocalFile() error {

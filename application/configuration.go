@@ -7,12 +7,13 @@ type Configuration interface {
 	GetLoader() ContextLoader
 	GetComponents() []ComponentInfo
 	GetResources() collection.Resources
+	GetAttributes() collection.Attributes
 	GetEnvironment() collection.Environment
 	GetDefaultProperties() collection.Properties
 	IsEnableLoadPropertiesFromArguments() bool
 }
 
-//  ContextLoader 用于加载进程上下文
+// ContextLoader 用于加载进程上下文
 type ContextLoader interface {
 	Load(config Configuration, args []string) (Context, error)
 }
@@ -21,6 +22,7 @@ type ContextLoader interface {
 type ConfigBuilder interface {
 	AddComponent(info ComponentInfo)
 	SetResources(res collection.Resources)
+	SetAttribute(name string, value interface{})
 
 	SetEnableLoadPropertiesFromArguments(enable bool)
 	IsEnableLoadPropertiesFromArguments() bool
