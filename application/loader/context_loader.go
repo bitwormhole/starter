@@ -72,6 +72,11 @@ func (inst *RuntimeContextLoader) Load(config application.Configuration, args []
 		return nil, err
 	}
 
+	err = inst.loadAndDisplayBanner()
+	if err != nil {
+		return nil, err
+	}
+
 	err = inst.loadAtts()
 	if err != nil {
 		return nil, err
@@ -233,6 +238,13 @@ func (inst *RuntimeContextLoader) loadPropertiesInLocalFile() error {
 		return err
 	}
 	return inst.loadPropertiesInArgs()
+}
+
+func (inst *RuntimeContextLoader) loadAndDisplayBanner() error {
+	displayer := &bannerDisplayer{}
+	displayer.properties = inst.context.GetProperties()
+	displayer.resources = inst.context.GetResources()
+	return displayer.display()
 }
 
 func (inst *RuntimeContextLoader) createRuntimeContext() error {
