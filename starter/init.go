@@ -34,7 +34,7 @@ func (inst *innerInitializer) EmbedResources(fs *embed.FS, path string) applicat
 	return inst
 }
 
-func (inst *innerInitializer) MountResources(res collection.Resources, path string) application.Initializer {
+func (inst *innerInitializer) MountResources(res collection.Resources) application.Initializer {
 	inst.cfgBuilder.SetResources(res)
 	return inst
 }
