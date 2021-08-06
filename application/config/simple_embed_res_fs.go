@@ -75,6 +75,7 @@ func (inst *simpleEmbedResFS) List(path string, recursive bool) []*collection.Re
 		fs:        inst.fs,
 		basePath:  path,
 		recursive: recursive,
+		owner:     inst,
 	}
 	return walker.walk()
 }
