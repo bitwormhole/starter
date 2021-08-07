@@ -1,4 +1,4 @@
-package starter
+package starterconf
 
 import (
 	"strconv"
@@ -8,7 +8,8 @@ import (
 	"github.com/bitwormhole/starter/util/configenchecker"
 )
 
-func configure(cb application.ConfigBuilder, starterVersion string, starterRevision int) error {
+// ExportConfig 对外导出配置
+func ExportConfig(cb application.ConfigBuilder, starterVersion string, starterRevision int) error {
 
 	dp := cb.DefaultProperties()
 	dp.SetProperty("configen.checker.enable", "false")
