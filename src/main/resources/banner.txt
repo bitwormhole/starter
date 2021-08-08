@@ -4,4 +4,4 @@
   \___ \  | __|  / _` | | '__| | __|  / _ \ | '__|
   ____) | | |_  | (_| | | |    | |_  |  __/ | |   
  |_____/   \__|  \__,_| |_|     \__|  \___| |_|   
-:: Bitwormhole Starter ::       (${starter.version})
+:: Bitwormhole Starter ::       (${module.starter.version})
