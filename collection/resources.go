@@ -11,6 +11,25 @@ type Resource struct {
 	IsDir        bool
 }
 
+// Res 接口代表一个资源实体
+type Res interface {
+	// 加载文本
+	ReadText() (string, error)
+
+	// 加载二进制数据
+	ReadBinary() ([]byte, error)
+
+	// 读数据流
+	Reader() (io.ReadCloser, error)
+
+	// 取长度
+	Length() int64
+
+	IsFile() bool
+	IsDir() bool
+	Exists() bool
+}
+
 // Resources 接口提供一组获取资源的方法
 type Resources interface {
 
@@ -28,4 +47,12 @@ type Resources interface {
 
 	// 列出所有资源的路径
 	List(path string, recursive bool) []*Resource
+
+	Get(path string) (Res, error)
+
+	Clear()
+
+	Import(src map[string]Res, override bool)
+
+	Export(dst map[string]Res) map[string]Res
 }

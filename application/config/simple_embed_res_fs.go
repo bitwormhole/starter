@@ -6,58 +6,95 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"strings"
+	"log"
 
 	"github.com/bitwormhole/starter/collection"
-	"github.com/bitwormhole/starter/util"
 )
 
-type simpleEmbedResFS struct {
-	fs     *embed.FS
-	prefix string
-}
+////////////////////////////////////////////////////////////////////////////////
 
-func (inst *simpleEmbedResFS) computeResPath(path string) string {
-
-	const uriToken = ":/"
-	uriTokenIndex := strings.Index(path, uriToken)
-
-	if uriTokenIndex > 0 {
-		// 去掉URI.path之前的部分
-		uriTokenLength := len(uriToken)
-		path = path[uriTokenIndex+uriTokenLength:]
-	}
-
-	builder := &util.PathBuilder{}
-	builder.EnableRoot(false)
-	builder.EnableDoubleDot(false)
-	builder.EnableTrim(true)
-	builder.AppendPath(inst.prefix)
-	builder.AppendPath(path)
-	return builder.String()
-}
-
-func (inst *simpleEmbedResFS) GetText(path string) (string, error) {
-	path = inst.computeResPath(path)
-	data, err := inst.fs.ReadFile(path)
+// LoadResourcesFromEmbedFS 从嵌入的FS加载资源组
+func LoadResourcesFromEmbedFS(fs *embed.FS, path string) collection.Resources {
+	loader := &simpleEmbedTreeLoader{}
+	all, err := loader.load(fs, path)
 	if err != nil {
-		return "", err
+		log.Println("[WARN] LoadResourcesFromEmbedFS error: " + err.Error())
+		return collection.CreateResources()
 	}
-	text := string(data)
-	return text, nil
+	return all
 }
 
-func (inst *simpleEmbedResFS) GetBinary(path string) ([]byte, error) {
-	path = inst.computeResPath(path)
-	data, err := inst.fs.ReadFile(path)
+////////////////////////////////////////////////////////////////////////////////
+
+type simpleEmbedRes struct {
+	fs    *embed.FS
+	src   string
+	isdir bool
+
+	data []byte // cache
+}
+
+func (inst *simpleEmbedRes) _Impl() collection.Res {
+	return inst
+}
+
+func (inst *simpleEmbedRes) Length() int64 {
+	data, err := inst.getbin()
 	if err != nil {
-		return nil, err
+		return 0
+	}
+	size := len(data)
+	return int64(size)
+}
+
+func (inst *simpleEmbedRes) Exists() bool {
+	return true
+}
+
+func (inst *simpleEmbedRes) IsDir() bool {
+	return inst.isdir
+}
+
+func (inst *simpleEmbedRes) IsFile() bool {
+	return !inst.isdir
+}
+
+func (inst *simpleEmbedRes) getbin() ([]byte, error) {
+	if inst.isdir {
+		return nil, errors.New("node is a dir, src=" + inst.src)
+	}
+	data := inst.data
+	if data == nil {
+		bin, err := inst.fs.ReadFile(inst.src)
+		if err != nil {
+			return nil, err
+		}
+		data = bin
+		inst.data = bin
 	}
 	return data, nil
 }
 
-func (inst *simpleEmbedResFS) GetReader(path string) (io.ReadCloser, error) {
-	data, err := inst.GetBinary(path)
+func (inst *simpleEmbedRes) ReadBinary() ([]byte, error) {
+	data, err := inst.getbin()
+	if err != nil {
+		return nil, err
+	}
+	dst := make([]byte, len(data))
+	copy(dst, data)
+	return dst, nil
+}
+
+func (inst *simpleEmbedRes) ReadText() (string, error) {
+	data, err := inst.getbin()
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
+func (inst *simpleEmbedRes) Reader() (io.ReadCloser, error) {
+	data, err := inst.getbin()
 	if err != nil {
 		return nil, err
 	}
@@ -65,105 +102,55 @@ func (inst *simpleEmbedResFS) GetReader(path string) (io.ReadCloser, error) {
 	return ioutil.NopCloser(reader), nil
 }
 
-func (inst *simpleEmbedResFS) All() []*collection.Resource {
-	return inst.List("/", true)
-}
-
-func (inst *simpleEmbedResFS) List(path string, recursive bool) []*collection.Resource {
-	// path = inst.computeResPath(path)
-	walker := &simpleEmbedTreeWalker{
-		fs:        inst.fs,
-		basePath:  path,
-		recursive: recursive,
-		owner:     inst,
-	}
-	return walker.walk()
-}
-
-// CreateEmbedFsResources 从【embed.FS】创建资源组
-func CreateEmbedFsResources(fs *embed.FS, pathPrefix string) collection.Resources {
-	return &simpleEmbedResFS{
-		fs:     fs,
-		prefix: pathPrefix,
-	}
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
-type simpleEmbedTreeWalker struct {
-	owner *simpleEmbedResFS
-
-	fs        *embed.FS
-	basePath  string
-	recursive bool
-
-	results []*collection.Resource
+type simpleEmbedTreeLoader struct {
 }
 
-func (inst *simpleEmbedTreeWalker) child(name string, parent *collection.Resource) *collection.Resource {
-	ch := &collection.Resource{}
-	ch.Name = name
-	if parent == nil {
-		// root
-		ch.BasePath = inst.basePath
-		ch.AbsolutePath = inst.basePath
-		ch.RelativePath = "."
-	} else {
-		// child
-		ch.BasePath = parent.BasePath
-		ch.AbsolutePath = parent.AbsolutePath + "/" + name
-		ch.RelativePath = parent.RelativePath + "/" + name
+func (inst *simpleEmbedTreeLoader) load(fs *embed.FS, path string) (collection.Resources, error) {
+
+	table := make(map[string]collection.Res)
+	result := collection.CreateResources()
+	const depthLimit = 99
+
+	err := inst.walkDir(fs, path, "/", depthLimit, table)
+	if err != nil {
+		return nil, err
 	}
-	return ch
+
+	result.Import(table, false)
+	return result, nil
 }
 
-func (inst *simpleEmbedTreeWalker) root() *collection.Resource {
-	return inst.child("", nil)
-}
-
-func (inst *simpleEmbedTreeWalker) walk() []*collection.Resource {
-	node := inst.root()
-	inst.results = make([]*collection.Resource, 0)
-	inst.walkWithDir(node, 99)
-	return inst.results
-}
-
-func (inst *simpleEmbedTreeWalker) walkWithDir(node *collection.Resource, limit int) error {
-	if limit < 0 {
-		return errors.New("path is too deep: " + node.AbsolutePath)
+func (inst *simpleEmbedTreeLoader) walkDir(fs *embed.FS, pathFs string, pathRes string, depthLimit int, dst map[string]collection.Res) error {
+	if depthLimit < 1 {
+		return errors.New("path is too deep, path=" + pathFs)
 	}
-	fullpath := inst.owner.computeResPath(node.AbsolutePath)
-	items, err := inst.fs.ReadDir(fullpath)
+	items, err := fs.ReadDir(pathFs)
 	if err != nil {
 		return err
 	}
 	for _, item := range items {
 		name := item.Name()
-		t := item.Type()
-		child := inst.child(name, node)
-		child.IsDir = item.IsDir()
-		if child.IsDir {
-			inst.onDir(child)
-			if inst.recursive {
-				err := inst.walkWithDir(child, limit-1)
-				if err != nil {
-					return err
-				}
+		isfile := item.Type().IsRegular()
+		if item.IsDir() {
+			err := inst.walkDir(fs, pathFs+"/"+name, pathRes+"/"+name, depthLimit-1, dst)
+			if err != nil {
+				return err
 			}
-		} else if t.IsRegular() {
-			inst.onFile(child)
+		} else if isfile {
+			inst.onFile(fs, pathFs+"/"+name, pathRes+"/"+name, dst)
 		}
 	}
-
 	return nil
 }
 
-func (inst *simpleEmbedTreeWalker) onFile(node *collection.Resource) {
-	inst.results = append(inst.results, node)
-}
-
-func (inst *simpleEmbedTreeWalker) onDir(node *collection.Resource) {
-	inst.results = append(inst.results, node)
+func (inst *simpleEmbedTreeLoader) onFile(fs *embed.FS, pathFs string, pathRes string, dst map[string]collection.Res) {
+	item := &simpleEmbedRes{}
+	item.src = pathFs
+	item.fs = fs
+	item.isdir = false
+	dst[pathRes] = item
 }
 
 ////////////////////////////////////////////////////////////////////////////////

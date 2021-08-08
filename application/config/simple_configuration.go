@@ -1,8 +1,6 @@
 package config
 
 import (
-	"embed"
-
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/application/loader"
 	"github.com/bitwormhole/starter/collection"
@@ -85,14 +83,6 @@ func (inst *appConfig) GetBuilder() application.ConfigBuilder {
 	return inst
 }
 
-// SetResources 用于配置上下文的资源文件夹
-func (inst *appConfig) SetResFS(fs *embed.FS, prefix string) {
-	inst.resources = &simpleEmbedResFS{
-		fs:     fs,
-		prefix: prefix,
-	}
-}
-
 func (inst *appConfig) DefaultProperties() collection.Properties {
 	return inst.defaultProperties
 }
@@ -129,14 +119,6 @@ func NewBuilderRes(res collection.Resources) application.ConfigBuilder {
 	cfg := &appConfig{}
 	cb := cfg.init()
 	cb.SetResources(res)
-	return cb
-}
-
-// NewBuilderFS  新建配置建造器，并附带指定的资源文件
-func NewBuilderFS(fs *embed.FS, prefix string) application.ConfigBuilder {
-	cfg := &appConfig{}
-	cb := cfg.init()
-	cfg.SetResFS(fs, prefix)
 	return cb
 }
 

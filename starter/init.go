@@ -1,7 +1,6 @@
 package starter
 
 import (
-	"embed"
 	"log"
 	"os"
 
@@ -15,29 +14,23 @@ import (
 func InitApp() application.Initializer {
 	inst := &innerInitializer{}
 	i := inst.init()
-	i.Use(etc.Module())
+	i.Use(Module())
 	return i
+}
+
+// Module 导出【starter】模块
+func Module() application.Module {
+	return etc.ExportModule()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 type innerInitializer struct {
-	modules    map[string]application.Module
+	modules    *moduleManager
 	cfgBuilder application.ConfigBuilder
 }
 
 // public
-
-func (inst *innerInitializer) EmbedResources(fs *embed.FS, path string) application.Initializer {
-	res := config.CreateEmbedFsResources(fs, path)
-	inst.cfgBuilder.SetResources(res)
-	return inst
-}
-
-func (inst *innerInitializer) MountResources(res collection.Resources) application.Initializer {
-	inst.cfgBuilder.SetResources(res)
-	return inst
-}
 
 func (inst *innerInitializer) SetAttribute(name string, value interface{}) application.Initializer {
 	inst.cfgBuilder.SetAttribute(name, value)
@@ -45,18 +38,7 @@ func (inst *innerInitializer) SetAttribute(name string, value interface{}) appli
 }
 
 func (inst *innerInitializer) Use(module application.Module) application.Initializer {
-	if module == nil {
-		return inst
-	}
-	name := module.GetName()
-	older := inst.modules[name]
-	if older != nil {
-		if older.GetRevision() >= module.GetRevision() {
-			return inst
-		}
-	}
-	inst.modules[name] = module
-	inst.useDependencies(module.GetDependencies())
+	inst.modules.use(module, true)
 	return inst
 }
 
@@ -70,16 +52,28 @@ func (inst *innerInitializer) Run() {
 // private
 
 func (inst *innerInitializer) init() application.Initializer {
-	inst.modules = make(map[string]application.Module)
+	inst.modules = createModuleManager()
 	inst.cfgBuilder = config.NewBuilder()
 	return inst
 }
 
-func (inst *innerInitializer) applyModules() error {
-	mods := inst.modules
+func (inst *innerInitializer) loadResourcesFromModules(mods []application.Module) error {
+	sum := collection.CreateResources()
+	for _, mod := range mods {
+		res := mod.GetResources()
+		if res == nil {
+			continue
+		}
+		items := res.Export(nil)
+		sum.Import(items, true)
+	}
+	inst.cfgBuilder.SetResources(sum)
+	return nil
+}
+
+func (inst *innerInitializer) applyModules(mods []application.Module) error {
 	cb := inst.cfgBuilder
-	for key := range mods {
-		mod := mods[key]
+	for _, mod := range mods {
 		log.Println("use module", mod.GetName(), mod.GetVersion())
 		err := mod.Apply(cb)
 		if err != nil {
@@ -89,19 +83,26 @@ func (inst *innerInitializer) applyModules() error {
 	return nil
 }
 
-func (inst *innerInitializer) useDependencies(deps []application.Module) {
-	if deps == nil {
-		return
-	}
-	for index := range deps {
-		item := deps[index]
-		inst.Use(item)
-	}
-}
+// func (inst *innerInitializer) useDependencies(deps []application.Module) {
+// 	if deps == nil {
+// 		return
+// 	}
+// 	for index := range deps {
+// 		item := deps[index]
+// 		inst.Use(item)
+// 	}
+// }
 
 func (inst *innerInitializer) inTryRun() error {
 
-	err := inst.applyModules()
+	mods := inst.modules.listAll()
+
+	err := inst.loadResourcesFromModules(mods)
+	if err != nil {
+		return err
+	}
+
+	err = inst.applyModules(mods)
 	if err != nil {
 		return err
 	}
