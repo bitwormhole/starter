@@ -3,6 +3,7 @@ package starter
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/application/config"
@@ -73,14 +74,31 @@ func (inst *innerInitializer) loadResourcesFromModules(mods []application.Module
 
 func (inst *innerInitializer) applyModules(mods []application.Module) error {
 	cb := inst.cfgBuilder
-	for _, mod := range mods {
+	props := cb.DefaultProperties()
+	for index, mod := range mods {
 		log.Println("use module", mod.GetName(), mod.GetVersion())
 		err := mod.Apply(cb)
 		if err != nil {
 			return err
 		}
+		inst.writeModuleInfoToProperties(props, index, mod)
 	}
 	return nil
+}
+
+func (inst *innerInitializer) writeModuleInfoToProperties(props collection.Properties, index int, mod application.Module) {
+
+	name := mod.GetName()
+	ver := mod.GetVersion()
+	rev := strconv.Itoa(mod.GetRevision())
+	idx := strconv.Itoa(index)
+
+	prefix := "module." + idx + "."
+
+	props.SetProperty(prefix+"name", name)
+	props.SetProperty(prefix+"version", ver)
+	props.SetProperty(prefix+"revision", rev)
+	props.SetProperty(prefix+"index", idx)
 }
 
 // func (inst *innerInitializer) useDependencies(deps []application.Module) {
