@@ -29,6 +29,20 @@ func (inst *DefineModule) __impl__() Module {
 	return inst
 }
 
+func (inst *DefineModule) AddDependency(mod Module) {
+	if mod == nil {
+		return
+	}
+	list := inst.Dependencies
+	if list == nil {
+		list = make([]Module, 1)
+		list[0] = mod
+	} else {
+		list = append(list, mod)
+	}
+	inst.Dependencies = list
+}
+
 func (inst *DefineModule) GetDependencies() []Module {
 	src := inst.Dependencies
 	dst := make([]Module, 0)

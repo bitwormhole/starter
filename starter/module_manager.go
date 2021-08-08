@@ -124,7 +124,7 @@ func (inst *moduleHolderSorter) Swap(i1, i2 int) {
 func (inst *moduleHolderSorter) Less(i1, i2 int) bool {
 	o1 := inst.list[i1]
 	o2 := inst.list[i2]
-	return o1.depthSum < o2.depthSum
+	return o1.depthSum > o2.depthSum
 }
 
 func (inst *moduleHolderSorter) Len() int {
