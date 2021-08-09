@@ -8,7 +8,6 @@ import (
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/application/config"
 	"github.com/bitwormhole/starter/collection"
-	etc "github.com/bitwormhole/starter/etc/starter"
 )
 
 // InitApp 开始初始化应用程序
@@ -17,11 +16,6 @@ func InitApp() application.Initializer {
 	i := inst.init()
 	i.Use(Module())
 	return i
-}
-
-// Module 导出【starter】模块
-func Module() application.Module {
-	return etc.ExportModule()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,16 +94,6 @@ func (inst *innerInitializer) writeModuleInfoToProperties(props collection.Prope
 	props.SetProperty(prefix+"revision", rev)
 	props.SetProperty(prefix+"index", idx)
 }
-
-// func (inst *innerInitializer) useDependencies(deps []application.Module) {
-// 	if deps == nil {
-// 		return
-// 	}
-// 	for index := range deps {
-// 		item := deps[index]
-// 		inst.Use(item)
-// 	}
-// }
 
 func (inst *innerInitializer) inTryRun() error {
 
