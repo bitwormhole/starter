@@ -3,7 +3,7 @@ package srctestgo
 import (
 	"testing"
 
-	"github.com/bitwormhole/starter/starter"
+	"github.com/bitwormhole/starter"
 )
 
 func TestMain(t *testing.T) {
