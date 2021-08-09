@@ -32,3 +32,4 @@ func (inst *innerWindowsPlatform) PathSeparatorChar() rune {
 func (inst *innerWindowsPlatform) SeparatorChar() rune {
 	return '\\'
 }
+
