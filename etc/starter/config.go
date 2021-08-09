@@ -1,4 +1,4 @@
-package starterconf
+package etcstarter
 
 import (
 	"strconv"

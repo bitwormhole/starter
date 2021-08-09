@@ -1,23 +1,22 @@
 // 这个配置文件是由 starter-configen 工具自动生成的。
 // 任何时候，都不要手工修改这里面的内容！！！
 
-package starterconf
+package etcstarter
 
-import(
+import (
 	errors "errors"
+
 	application "github.com/bitwormhole/starter/application"
 	config "github.com/bitwormhole/starter/application/config"
 	lang "github.com/bitwormhole/starter/lang"
 	configenchecker_e7a472 "github.com/bitwormhole/starter/util/configenchecker"
 )
 
-
 func autoGenConfig(configbuilder application.ConfigBuilder) error {
 
 	cominfobuilder := &config.ComInfoBuilder{}
 	err := errors.New("OK")
 
-    
 	// theConfigenChecker
 	cominfobuilder.Reset()
 	cominfobuilder.ID("theConfigenChecker").Class("").Scope("").Aliases("")
@@ -41,14 +40,12 @@ func autoGenConfig(configbuilder application.ConfigBuilder) error {
 		return nil
 	})
 	err = cominfobuilder.CreateTo(configbuilder)
-    if err !=nil{
-        return err
-    }
-
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // type theConfigenChecker struct
@@ -67,26 +64,23 @@ func (inst *theConfigenChecker) __inject__(context application.Context) error {
 	}
 
 	// from getters
-	inst.Context=inst.__get_Context__(injection, "context")
-	inst.Enable=inst.__get_Enable__(injection, "${configen.checker.enable}")
-
+	inst.Context = inst.__get_Context__(injection, "context")
+	inst.Enable = inst.__get_Enable__(injection, "${configen.checker.enable}")
 
 	// to instance
-	instance.Context=inst.Context
-	instance.Enable=inst.Enable
-
+	instance.Context = inst.Context
+	instance.Enable = inst.Enable
 
 	// invoke custom inject method
-
 
 	return injection.Close()
 }
 
-func (inst * theConfigenChecker) __get_Context__(injection application.Injection,selector string) application.Context {
+func (inst *theConfigenChecker) __get_Context__(injection application.Injection, selector string) application.Context {
 	return injection.Context()
 }
 
-func (inst * theConfigenChecker) __get_Enable__(injection application.Injection,selector string) bool {
+func (inst *theConfigenChecker) __get_Enable__(injection application.Injection, selector string) bool {
 	reader := injection.Select(selector)
 	defer reader.Close()
 	value, err := reader.ReadBool()
@@ -95,4 +89,3 @@ func (inst * theConfigenChecker) __get_Enable__(injection application.Injection,
 	}
 	return value
 }
-
