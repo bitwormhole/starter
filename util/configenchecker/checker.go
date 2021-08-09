@@ -31,7 +31,8 @@ func (inst *ConfigenChecker) doCheck() error {
 
 	dir, err := inst.findProjectDir(path0)
 	if err != nil {
-		return err
+		// return err
+		return nil // 找不到就算了，反正这个检查不是强制的:-(
 	}
 
 	nodes, err := inst.loadConfigenNodesInProjectDir(dir)
