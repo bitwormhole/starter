@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	myVersion  = "v0.0.31"
-	myRevision = 31
+	myVersion  = "v0.0.32"
+	myRevision = 32
 )
 
 // Module 函数用于导出本模块
