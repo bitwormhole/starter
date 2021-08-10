@@ -1,10 +1,10 @@
 package loader
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/bitwormhole/starter/collection"
+	"github.com/bitwormhole/starter/vlog"
 )
 
 type bannerDisplayer struct {
@@ -17,8 +17,9 @@ func (inst *bannerDisplayer) display() error {
 	if err != nil {
 		return nil
 	}
-	text = inst.injectValues(text)
-	fmt.Println(text)
+	const prefix = "\n"
+	text = inst.injectValues(prefix + text)
+	vlog.Info(text)
 	return nil
 }
 

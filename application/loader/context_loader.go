@@ -3,7 +3,6 @@ package loader
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"sort"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/bitwormhole/starter/application/runtime"
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/io/fs"
+	"github.com/bitwormhole/starter/vlog"
 )
 
 // RuntimeContextLoader 运行时上下文加载器
@@ -203,7 +203,7 @@ func (inst *RuntimeContextLoader) loadPropertiesInRes2() error {
 	properties := inst.context.GetProperties()
 	profile := properties.GetProperty(key, "default")
 	name := "/application-" + profile + ".properties"
-	log.Println(key+":", profile)
+	vlog.Info(key+":", profile)
 	return inst.loadPropertiesInRes(name)
 }
 

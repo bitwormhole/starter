@@ -2,13 +2,13 @@ package configenchecker
 
 import (
 	"errors"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/io/fs"
+	"github.com/bitwormhole/starter/vlog"
 )
 
 type ConfigenChecker struct {
@@ -27,7 +27,7 @@ func (inst *ConfigenChecker) doCheck() error {
 
 	exe := os.Args[0]
 	path0 := fs.Default().GetPath(exe)
-	log.Println("CHECK configen.properties in ", path0.Path())
+	vlog.Info("CHECK configen.properties in", path0.Path())
 
 	dir, err := inst.findProjectDir(path0)
 	if err != nil {
@@ -98,7 +98,7 @@ func (inst *ConfigenChecker) checkConfigenNodes(nodes []fs.Path) error {
 			return err
 		}
 	}
-	log.Println("[OK]")
+	vlog.Info("[OK]")
 	return nil
 }
 
@@ -107,7 +107,7 @@ func (inst *ConfigenChecker) checkConfigenNode(file fs.Path) error {
 	path := file.Path()
 	dir := file.Parent()
 	const keyOutputFile = "configen.output.file"
-	log.Println("  check ", path)
+	vlog.Info("  check ", path)
 
 	props, err := inst.loadPropertiesInFile(file)
 	if err != nil {

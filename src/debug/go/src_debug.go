@@ -1,12 +1,11 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/bitwormhole/starter"
+	"github.com/bitwormhole/starter/vlog"
 )
 
 func main() {
-	fmt.Println("src/debug/go")
-	starter.InitApp().Use(starter.Module()).Run()
+	vlog.Info("src/debug/go")
+	starter.InitApp().Use(starter.Module()).Use(innerModule()).Run()
 }
