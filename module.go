@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	myName     = "github.com/bitwormhole/starter"
 	myVersion  = "v0.0.32"
 	myRevision = 32
 )
@@ -14,14 +15,12 @@ const (
 // Module 函数用于导出本模块
 func Module() application.Module {
 
-	mod := &application.DefineModule{
-		Name:     "github.com/bitwormhole/starter",
-		Version:  myVersion,
-		Revision: myRevision,
-	}
+	builder := &application.ModuleBuilder{}
+	builder.Name(myName).Version(myVersion).Revision(myRevision)
+	builder.Resources(srcmain.ExportResources())
+	builder.Dependency(nil)
 
-	mod.OnMount = func(cb application.ConfigBuilder) error { return etcstarter.ExportConfig(cb, mod) }
-	mod.Resources = srcmain.ExportResources()
-
-	return mod
+	mod := builder.Create()
+	builder.OnMount(func(cb application.ConfigBuilder) error { return etcstarter.ExportConfig(cb, mod) })
+	return builder.Create()
 }

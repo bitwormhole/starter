@@ -2,12 +2,10 @@ package etc
 
 import (
 	"github.com/bitwormhole/starter/application"
-	"github.com/bitwormhole/starter/etc/starter"
+	etcstarter "github.com/bitwormhole/starter/etc/starter"
 )
 
 func Config(cb application.ConfigBuilder) error {
-
-	starter.Config(cb)
-
+	etcstarter.ExportConfig(cb, nil)
 	return autoGenConfig(cb)
 }

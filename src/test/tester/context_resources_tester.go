@@ -21,7 +21,7 @@ func (inst *ContextResourcesTester) Run() error {
 	all := res.All()
 
 	for index := range all {
-		name := all[index]
+		name := all[index].AbsolutePath
 		text, err := res.GetText(name)
 		if err != nil {
 			return err
