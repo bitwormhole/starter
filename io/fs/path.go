@@ -1,7 +1,7 @@
 package fs
 
 import (
-	"os"
+	"io"
 )
 
 // FileSystem  代表一个抽象的文件系统
@@ -40,8 +40,8 @@ type Path interface {
 
 	GetIO() FileIO
 
-	CreateFile(mode IoMode) error
-	CreateFileWithSize(size int64, mode IoMode) error
+	CreateFile(opt *Options) error
+	CreateFileWithSize(size int64, opt *Options) error
 
 	CopyTo(target Path) error
 	MoveTo(target Path) error
@@ -59,19 +59,21 @@ type Path interface {
 	GetHref(name string) Path
 }
 
-// IoMode 执行文件IO操作的模式
-type IoMode interface {
-	Flag() int
-	Perm() os.FileMode
-}
+// // IoMode 执行文件IO操作的模式
+// type IoMode interface {
+// 	Flag() int
+// 	Perm() os.FileMode
+// }
 
 // FileIO 表示对一个具体文件的IO
 type FileIO interface {
 	Path() Path
-	WriteText(text string, mode IoMode) error
-	WriteBinary(data []byte, mode IoMode) error
+	WriteText(text string, opt *Options) error
+	WriteBinary(data []byte, opt *Options) error
 	ReadText() (string, error)
 	ReadBinary() ([]byte, error)
+	OpenReader() (io.ReadCloser, error)
+	OpenWriter(opt *Options, mkdirs bool) (io.WriteCloser, error)
 }
 
 // FileMeta  表示对一个具体文件的 posix liked mode

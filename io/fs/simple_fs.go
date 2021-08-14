@@ -118,9 +118,8 @@ func (inst *innerPath) Parent() Path {
 	path2 := parent.Path()
 	if path1 == path2 {
 		return nil
-	} else {
-		return parent
 	}
+	return parent
 }
 
 func (inst *innerPath) Exists() bool {
@@ -253,25 +252,18 @@ func (inst *innerPath) SetMeta(mode FileMeta) {
 	// TODO
 }
 
-func (inst *innerPath) CreateFile(mode IoMode) error {
-	return inst.CreateFileWithSize(0, mode)
+func (inst *innerPath) CreateFile(opt *Options) error {
+	return inst.CreateFileWithSize(0, opt)
 }
 
-func (inst *innerPath) CreateFileWithSize(size int64, mode IoMode) error {
+func (inst *innerPath) CreateFileWithSize(size int64, opt *Options) error {
 
 	if inst.Exists() {
 		return errors.New("the file exists")
 	}
 
-	flag := os.O_CREATE | os.O_WRONLY
-	var perm os.FileMode = 0644
-
-	if mode != nil {
-		flag = mode.Flag()
-		perm = mode.Perm()
-	}
-
-	file, err := os.OpenFile(inst.path, flag, perm)
+	opt = opt.Normalize()
+	file, err := os.OpenFile(inst.path, opt.Flag, opt.Mode)
 	if err != nil {
 		return err
 	}

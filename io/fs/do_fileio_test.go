@@ -3,6 +3,8 @@ package fs
 import (
 	"bytes"
 	"testing"
+
+	"github.com/bitwormhole/starter/vlog"
 )
 
 // tests for FileIO
@@ -58,4 +60,11 @@ func TestWriteBinary(t *testing.T) {
 		t.Error("FileIO.ReadBinary() != FileIO.WriteBinary()")
 	}
 
+}
+
+func TestOptions(t *testing.T) {
+	opt := &Options{}
+	opt = nil
+	opt = opt.Normalize()
+	vlog.Debug(opt)
 }
