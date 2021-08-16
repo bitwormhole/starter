@@ -26,4 +26,5 @@ func TestGetParent(t *testing.T) {
 
 		path = path.Parent()
 	}
+	vlog.Debug("node[done]")
 }
