@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"testing"
 
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/io/fs"
@@ -15,11 +14,11 @@ import (
 // TestDirectoryLoader 测试目录加载器
 type TestDirectoryLoader struct {
 	r collection.Resources
-	t *testing.T
+	t TestContext
 }
 
 // Init 初始化
-func (inst *TestDirectoryLoader) Init(r collection.Resources, t *testing.T) {
+func (inst *TestDirectoryLoader) Init(r collection.Resources, t TestContext) {
 	inst.r = r
 	inst.t = t
 }
@@ -29,7 +28,7 @@ func (inst *TestDirectoryLoader) LoadFromFolder(path string) (fs.Path, error) {
 
 	t := inst.t
 	r := inst.r
-	temp := fs.Default().GetPath(t.TempDir())
+	temp := t.TempDir()
 	items := r.List(path, true)
 	target := temp.GetChild("./" + path)
 
@@ -60,7 +59,7 @@ func (inst *TestDirectoryLoader) LoadFromFolder(path string) (fs.Path, error) {
 // LoadFromZipFile 从资源组中的压缩文件加载测试目录
 func (inst *TestDirectoryLoader) LoadFromZipFile(zipfile string) (fs.Path, error) {
 	r := inst.r
-	temp := fs.Default().GetPath(inst.t.TempDir())
+	temp := inst.t.TempDir()
 	data, err := r.GetBinary(zipfile)
 	if err != nil {
 		return nil, err

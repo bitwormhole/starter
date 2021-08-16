@@ -26,9 +26,9 @@ func (inst *LoggerAdapter) getNext() Logger {
 	return next
 }
 
-func (inst *LoggerAdapter) SetSource(s interface{}) {
-	inst.getNext().SetSource(s)
-}
+// func (inst *LoggerAdapter) SetSource(s interface{}) {
+// 	inst.getNext().SetSource(s)
+// }
 
 func (inst *LoggerAdapter) Info(a ...interface{}) Logger {
 	inst.getNext().Info(a)

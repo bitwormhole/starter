@@ -38,7 +38,7 @@ type Logger interface {
 	Debug(a ...interface{}) Logger
 	Trace(a ...interface{}) Logger
 
-	SetSource(s interface{})
+	// 废弃： SetSource(s interface{})
 
 	IsFatalEnabled() bool
 	IsErrorEnabled() bool

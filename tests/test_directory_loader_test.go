@@ -9,9 +9,11 @@ import (
 
 func TestTheLoaderLoadFolder(t *testing.T) {
 
+	ctx := ContextForT(t)
+
 	res := srctest.ExportResources()
 	loader := &TestDirectoryLoader{}
-	loader.Init(res, t)
+	loader.Init(res, ctx)
 
 	dir, err := loader.LoadFromFolder("dirs/test1")
 	if err != nil {
@@ -24,9 +26,11 @@ func TestTheLoaderLoadFolder(t *testing.T) {
 
 func TestTheLoaderLoadZip(t *testing.T) {
 
+	ctx := ContextForT(t)
+
 	res := srctest.ExportResources()
 	loader := &TestDirectoryLoader{}
-	loader.Init(res, t)
+	loader.Init(res, ctx)
 
 	dir, err := loader.LoadFromZipFile("dirs/test1.zip")
 	if err != nil {
