@@ -47,7 +47,7 @@ func (inst *TestDirectoryLoader) LoadFromFolder(path string) (fs.Path, error) {
 		if err != nil {
 			return nil, err
 		}
-		err = dst.GetIO().WriteBinary(data, nil)
+		err = dst.GetIO().WriteBinary(data, nil, true)
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +85,7 @@ func (inst *TestDirectoryLoader) LoadFromZipFile(zipfile string) (fs.Path, error
 		}
 		defer src.Close()
 		entity := inst.readAll(src)
-		err = output.GetIO().WriteBinary(entity, nil)
+		err = output.GetIO().WriteBinary(entity, nil, true)
 		if err != nil {
 			return nil, err
 		}
