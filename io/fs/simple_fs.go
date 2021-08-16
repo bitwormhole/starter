@@ -16,6 +16,7 @@ type apiPlatform interface {
 	Roots() []string
 	PathSeparatorChar() rune
 	SeparatorChar() rune
+	normalizePath(path string) (string, error)
 }
 
 type innerFSCore struct {
@@ -85,15 +86,10 @@ func (inst *innerFileSystem) GetPathByURI(uri lang.URI) (Path, error) {
 }
 
 func (inst *innerFileSystem) GetPath(path string) Path {
-	sep := inst.Separator()
-	pb := &util.PathBuilder{}
-	pb.SetSeparator(sep)
-	pb.AppendPath(path)
-	path = pb.String()
-	if sep == "/" {
-		path = sep + path
+	path, err := inst.core.platform.normalizePath(path)
+	if err != nil {
+		return nil
 	}
-	//	path, _ = filepath.Abs(path)
 	return &innerPath{
 		core: inst.core,
 		path: path,
@@ -169,11 +165,6 @@ func (inst *innerPath) Path() string {
 
 func (inst *innerPath) Parent() Path {
 	parent := inst.FileSystem().GetPath(inst.path + "/..")
-	path1 := inst.path
-	path2 := parent.Path()
-	if path1 == path2 {
-		return nil
-	}
 	return parent
 }
 

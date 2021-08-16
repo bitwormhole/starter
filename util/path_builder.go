@@ -12,7 +12,7 @@ type PathBuilder struct {
 type innerPathBuilder struct {
 	parts           []string
 	separator       string
-	enableDoubleDot bool
+	ignoreDoubleDot bool
 	enableRoot      bool
 	enableTrim      bool
 }
@@ -22,7 +22,7 @@ type innerPathBuilder struct {
 func (inst *innerPathBuilder) init() {
 	inst.parts = make([]string, 0)
 	inst.separator = "/"
-	inst.enableDoubleDot = false
+	inst.ignoreDoubleDot = false
 	inst.enableRoot = false
 	inst.enableTrim = false
 }
@@ -72,9 +72,9 @@ func (inst *PathBuilder) EnableTrim(enable bool) *PathBuilder {
 	return inst
 }
 
-func (inst *PathBuilder) EnableDoubleDot(enable bool) *PathBuilder {
+func (inst *PathBuilder) IgnoreDoubleDot(enable bool) *PathBuilder {
 	inner := inst._inner()
-	inner.enableDoubleDot = enable
+	inner.ignoreDoubleDot = enable
 	return inst
 }
 
@@ -117,7 +117,7 @@ func (inst *PathBuilder) Create(prefix string, suffix string) (string, error) {
 	list1 := inner.parts
 	list2 := make([]string, 0)
 	en_trim := inner.enableTrim
-	en_dotdot := inner.enableDoubleDot
+	en_dotdot := !inner.ignoreDoubleDot
 
 	// filter items
 	for index := range list1 {
