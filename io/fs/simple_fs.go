@@ -3,9 +3,13 @@ package fs
 import (
 	"errors"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/bitwormhole/starter/lang"
+	"github.com/bitwormhole/starter/util"
 )
 
 type apiPlatform interface {
@@ -71,8 +75,25 @@ func Default() FileSystem {
 
 // impl innerFileSystem
 
+func (inst *innerFileSystem) GetPathByURI(uri lang.URI) (Path, error) {
+	scheme := uri.Scheme()
+	if scheme == "file" {
+		path := uri.Path()
+		return inst.GetPath("/" + path), nil
+	}
+	return nil, errors.New("bad scheme:" + scheme)
+}
+
 func (inst *innerFileSystem) GetPath(path string) Path {
-	path, _ = filepath.Abs(path)
+	sep := inst.Separator()
+	pb := &util.PathBuilder{}
+	pb.SetSeparator(sep)
+	pb.AppendPath(path)
+	path = pb.String()
+	if sep == "/" {
+		path = sep + path
+	}
+	//	path, _ = filepath.Abs(path)
 	return &innerPath{
 		core: inst.core,
 		path: path,
@@ -154,6 +175,23 @@ func (inst *innerPath) Parent() Path {
 		return nil
 	}
 	return parent
+}
+
+func (inst *innerPath) URI() lang.URI {
+	pb := &util.PathBuilder{}
+	pb.AppendPath(inst.path)
+	path, err := pb.Create("/", "")
+	if err != nil {
+		path = "/"
+	}
+	location := &url.URL{}
+	location.Scheme = "file"
+	location.Path = path
+	return lang.CreateURI(location)
+}
+
+func (inst *innerPath) String() string {
+	return inst.path
 }
 
 func (inst *innerPath) Exists() bool {

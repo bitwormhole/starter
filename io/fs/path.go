@@ -2,12 +2,15 @@ package fs
 
 import (
 	"io"
+
+	"github.com/bitwormhole/starter/lang"
 )
 
 // FileSystem  代表一个抽象的文件系统
 type FileSystem interface {
 	Roots() []Path
 	GetPath(path string) Path
+	GetPathByURI(uri lang.URI) (Path, error)
 	Separator() string
 	SeparatorChar() rune
 	PathSeparator() string
@@ -23,6 +26,8 @@ type Path interface {
 
 	// base
 
+	URI() lang.URI
+	String() string
 	Parent() Path
 	FileSystem() FileSystem
 

@@ -148,8 +148,7 @@ func (inst *PathBuilder) Create(prefix string, suffix string) (string, error) {
 	sep := ""
 	builder := &strings.Builder{}
 	builder.WriteString(prefix)
-	for index := range list2 {
-		item := list2[index]
+	for _, item := range list2 {
 		builder.WriteString(sep)
 		builder.WriteString(item)
 		sep = inner.separator

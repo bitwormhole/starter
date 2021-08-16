@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/bitwormhole/starter/vlog"
 )
 
 // tests for Path
@@ -350,4 +352,19 @@ func TestPathGetChild(t *testing.T) {
 	if c != "c" && b != "b" {
 		t.Error("bad child path (GetChild): " + file.Path())
 	}
+}
+
+func TestChineseInPath(t *testing.T) {
+
+	str := "c:/d/e/这是中文/f/g/带空  格的中文/a/b"
+	fsys := Default()
+	path := fsys.GetPath(str)
+
+	uri := path.URI()
+	path2, err := fsys.GetPathByURI(uri)
+	if err != nil {
+		t.Error(err)
+	}
+
+	vlog.Info("uri_with_chinese:", path2)
 }
