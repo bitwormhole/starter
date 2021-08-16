@@ -35,6 +35,9 @@ type innerFileSystem struct {
 	core *innerFSCore
 }
 
+var innerFileSystemDefaultOptionsR *Options
+var innerFileSystemDefaultOptionsW *Options
+
 // impl innerFileSystem
 
 // Default 创建一个默认的 FileSystem 实例
@@ -84,6 +87,37 @@ func (inst *innerFileSystem) Roots() []Path {
 		list[index] = inst.GetPath(path)
 	}
 	return list
+}
+
+func (inst *innerFileSystem) DefaultReadOptions() *Options {
+	opt := innerFileSystemDefaultOptionsR
+	if opt == nil {
+		opt = &Options{}
+		opt.Flag = os.O_RDONLY
+		opt.Mode = 0
+		innerFileSystemDefaultOptionsR = opt
+	}
+	return opt.Clone()
+}
+
+func (inst *innerFileSystem) DefaultWriteOptions() *Options {
+	opt := innerFileSystemDefaultOptionsW
+	if opt == nil {
+		opt = &Options{}
+		opt.Flag = os.O_WRONLY
+		opt.Mode = os.ModePerm
+		innerFileSystemDefaultOptionsW = opt
+	}
+	return opt.Clone()
+}
+
+func (inst *innerFileSystem) SetDefaultOptions(r *Options, w *Options) {
+	if r != nil {
+		innerFileSystemDefaultOptionsR = r.Normalize()
+	}
+	if w != nil {
+		innerFileSystemDefaultOptionsW = w.Normalize()
+	}
 }
 
 func (inst *innerFileSystem) Separator() string {

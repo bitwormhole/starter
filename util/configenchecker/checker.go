@@ -140,7 +140,7 @@ func (inst *ConfigenChecker) checkConfigenNode(file fs.Path) error {
 }
 
 func (inst *ConfigenChecker) loadPropertiesInFile(file fs.Path) (collection.Properties, error) {
-	text, err := file.GetIO().ReadText()
+	text, err := file.GetIO().ReadText(nil)
 	if err != nil {
 		return nil, err
 	}

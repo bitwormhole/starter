@@ -12,6 +12,10 @@ type FileSystem interface {
 	SeparatorChar() rune
 	PathSeparator() string
 	PathSeparatorChar() rune
+
+	DefaultReadOptions() *Options
+	DefaultWriteOptions() *Options
+	SetDefaultOptions(r *Options, w *Options)
 }
 
 // Path 代表一个路径
@@ -68,11 +72,11 @@ type Path interface {
 // FileIO 表示对一个具体文件的IO
 type FileIO interface {
 	Path() Path
-	WriteText(text string, opt *Options) error
-	WriteBinary(data []byte, opt *Options) error
-	ReadText() (string, error)
-	ReadBinary() ([]byte, error)
-	OpenReader() (io.ReadCloser, error)
+	WriteText(text string, opt *Options, mkdirs bool) error
+	WriteBinary(data []byte, opt *Options, mkdirs bool) error
+	ReadText(opt *Options) (string, error)
+	ReadBinary(opt *Options) ([]byte, error)
+	OpenReader(opt *Options) (io.ReadCloser, error)
 	OpenWriter(opt *Options, mkdirs bool) (io.WriteCloser, error)
 }
 

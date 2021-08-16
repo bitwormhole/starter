@@ -227,7 +227,7 @@ func (inst *RuntimeContextLoader) loadPropertiesInLocalFile() error {
 	}
 	// read text
 	file := fs.Default().GetPath(path)
-	text, err := file.GetIO().ReadText()
+	text, err := file.GetIO().ReadText(nil)
 	if err != nil {
 		return err
 	}
@@ -311,9 +311,9 @@ func (inst *RuntimeContextLoader) doCreateComponents() error {
 	}
 
 	// 导入到 context 里
-	com_set := ctx.GetComponents()
-	com_set.Import(dst)
-	inst.comTable = com_set.Export(nil)
+	comSet := ctx.GetComponents()
+	comSet.Import(dst)
+	inst.comTable = comSet.Export(nil)
 
 	return nil
 }
@@ -324,15 +324,15 @@ func (inst *RuntimeContextLoader) putComHolderToTable(table map[string]applicati
 	id := info.GetID()
 	aliases := info.GetAliases()
 
-	id_in_list := false
+	idInList := false
 	for index := range aliases {
 		name := aliases[index]
 		if name == id {
-			id_in_list = true
+			idInList = true
 			break
 		}
 	}
-	if !id_in_list {
+	if !idInList {
 		aliases = append(aliases, id)
 	}
 
