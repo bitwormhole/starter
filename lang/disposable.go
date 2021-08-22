@@ -32,3 +32,25 @@ func Release(pool ReleasePool) error {
 	}
 	return pool.Release()
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+// DisposableFunc Disposable 接口的函数形式
+type DisposableFunc func() error
+
+type disposableFuncAdapter struct {
+	fn DisposableFunc
+}
+
+func (inst *disposableFuncAdapter) Dispose() error {
+	fn := inst.fn
+	if fn == nil {
+		return nil
+	}
+	return fn()
+}
+
+// DisposableForFunc 函数创建一个 DisposableFunc 的包装
+func DisposableForFunc(fn DisposableFunc) Disposable {
+	return &disposableFuncAdapter{fn: fn}
+}

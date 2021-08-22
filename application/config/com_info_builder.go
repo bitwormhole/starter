@@ -7,98 +7,107 @@ import (
 	"github.com/bitwormhole/starter/application"
 )
 
-type ComInfoBuilder struct {
+type comInfoBuilder struct {
 	id      string
 	class   string
 	aliases string
 	scope   string
 
-	fnNew     OnNew
-	fnInject  OnInject
-	fnInit    OnInit
-	fnDestroy OnDestroy
+	// fnNew     OnNew
+	// fnInject  OnInject
+	// fnInit    OnInit
+	// fnDestroy OnDestroy
+
+	simpleFactory application.ComponentFactory
 }
 
-func (inst *ComInfoBuilder) ID(id string) *ComInfoBuilder {
+func (inst *comInfoBuilder) _Impl() ComponentInfoBuilder {
+	return inst
+}
+
+func (inst *comInfoBuilder) Next() ComponentInfoBuilder {
+	inst.Reset()
+	return inst
+}
+
+func (inst *comInfoBuilder) ID(id string) ComponentInfoBuilder {
 	inst.id = id
 	return inst
 }
 
-func (inst *ComInfoBuilder) Class(cls string) *ComInfoBuilder {
+func (inst *comInfoBuilder) Class(cls string) ComponentInfoBuilder {
 	inst.class = cls
 	return inst
 }
 
-func (inst *ComInfoBuilder) Aliases(aliases string) *ComInfoBuilder {
+func (inst *comInfoBuilder) Aliases(aliases string) ComponentInfoBuilder {
 	inst.aliases = aliases
 	return inst
 }
 
-func (inst *ComInfoBuilder) Scope(scope string) *ComInfoBuilder {
+func (inst *comInfoBuilder) Scope(scope string) ComponentInfoBuilder {
 	inst.scope = scope
 	return inst
 }
 
-func (inst *ComInfoBuilder) OnNew(fn OnNew) *ComInfoBuilder {
-	inst.fnNew = fn
+// func (inst *comInfoBuilder) OnNew(fn OnNew) ComponentInfoBuilder {
+// 	inst.fnNew = fn
+// 	return inst
+// }
+
+// func (inst *comInfoBuilder) OnInject(fn OnInject) ComponentInfoBuilder {
+// 	inst.fnInject = fn
+// 	return inst
+// }
+
+// func (inst *comInfoBuilder) OnInit(fn OnInit) ComponentInfoBuilder {
+// 	inst.fnInit = fn
+// 	return inst
+// }
+
+// func (inst *comInfoBuilder) OnDestroy(fn OnDestroy) ComponentInfoBuilder {
+// 	inst.fnDestroy = fn
+// 	return inst
+// }
+
+func (inst *comInfoBuilder) Factory(f application.ComponentFactory) ComponentInfoBuilder {
+	inst.simpleFactory = f
 	return inst
 }
 
-func (inst *ComInfoBuilder) OnInject(fn OnInject) *ComInfoBuilder {
-	inst.fnInject = fn
-	return inst
-}
-
-func (inst *ComInfoBuilder) OnInit(fn OnInit) *ComInfoBuilder {
-	inst.fnInit = fn
-	return inst
-}
-
-func (inst *ComInfoBuilder) OnDestroy(fn OnDestroy) *ComInfoBuilder {
-	inst.fnDestroy = fn
-	return inst
-}
-
-func (inst *ComInfoBuilder) Reset() {
+func (inst *comInfoBuilder) Reset() {
 
 	inst.id = ""
 	inst.class = ""
 	inst.scope = ""
 	inst.aliases = ""
-
-	inst.fnNew = nil
-	inst.fnInject = nil
-	inst.fnInit = nil
-	inst.fnDestroy = nil
+	inst.simpleFactory = nil
 }
 
-func (inst *ComInfoBuilder) Create() (*ComInfo, error) {
+func (inst *comInfoBuilder) Create() (application.ComponentInfo, error) {
 
 	scope, err := inst.parseScope(inst.scope)
 	if err != nil {
 		return nil, err
 	}
 
-	info := &ComInfo{}
-
+	info := &comInfo{}
 	info.ID = inst.id
 	info.Class = inst.class
 	info.Scope = scope
-	info.Aliases = inst.parseAliases(inst.aliases)
+	info.Aliases = inst.aliases
+	info.factory = inst.simpleFactory
 
-	info.OnNew = inst.fnNew
-	info.OnInject = inst.fnInject
-	info.OnInit = inst.fnInit
-	info.OnDestroy = inst.fnDestroy
+	// info.OnNew = inst.fnNew
+	// info.OnInject = inst.fnInject
+	// info.OnInit = inst.fnInit
+	// info.OnDestroy = inst.fnDestroy
 
 	inst.Reset()
-	if info.OnNew == nil {
-		return nil, errors.New("no func OnNew() for ComInfo")
-	}
 	return info, nil
 }
 
-func (inst *ComInfoBuilder) CreateTo(cb application.ConfigBuilder) error {
+func (inst *comInfoBuilder) CreateTo(cb application.ConfigBuilder) error {
 	info, err := inst.Create()
 	if err != nil {
 		return err
@@ -107,7 +116,7 @@ func (inst *ComInfoBuilder) CreateTo(cb application.ConfigBuilder) error {
 	return nil
 }
 
-func (inst *ComInfoBuilder) parseScope(str string) (application.ComponentScope, error) {
+func (inst *comInfoBuilder) parseScope(str string) (application.ComponentScope, error) {
 	str = strings.TrimSpace(str)
 	str = strings.ToLower(str)
 	if str == "" {
@@ -122,7 +131,7 @@ func (inst *ComInfoBuilder) parseScope(str string) (application.ComponentScope, 
 	return 0, errors.New("bad component scope value:" + str)
 }
 
-func (inst *ComInfoBuilder) parseAliases(str string) []string {
+func (inst *comInfoBuilder) parseAliases(str string) []string {
 
 	const sp1 = " "
 	const sp2 = ","

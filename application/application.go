@@ -35,7 +35,7 @@ func Exit(context Context) (int, error) {
 	return code, nil
 }
 
-// 依次调用 Run(), Loop(), Exit()
+// RunAndLoop 函数依次调用 Run(), Loop(), Exit()
 func RunAndLoop(config Configuration) (int, error) {
 
 	args := os.Args

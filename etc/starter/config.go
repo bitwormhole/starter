@@ -23,7 +23,7 @@ func ExportConfig(cb application.ConfigBuilder, module application.Module) error
 	dp.SetProperty("module.starter.version", module.GetVersion())
 	dp.SetProperty("module.starter.revision", strconv.Itoa(module.GetRevision()))
 
-	return autoGenConfig(cb)
+	return nil //  autoGenConfig(cb)
 }
 
 type theConfigenChecker struct {

@@ -1,4 +1,4 @@
-package srctestgo
+package main
 
 import (
 	"fmt"

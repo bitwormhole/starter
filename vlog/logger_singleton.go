@@ -1,28 +1,46 @@
 package vlog
 
 var defaultLoggerInstance Logger
+var defaultLoggerFactory LoggerFactory
+var defaultLoggerLocked bool // 锁定当前的日志系统
 
-// SetDefaultLogger 设置默认 Logger
-func SetDefaultLogger(logger Logger) {
-	if logger == nil {
+// SetDefaultFactory 设置默认 Logger 工厂
+func SetDefaultFactory(f LoggerFactory) {
+	if f == nil {
 		return
 	}
-	defaultLoggerInstance = logger
+	if defaultLoggerLocked {
+		if defaultLoggerFactory != nil || defaultLoggerInstance != nil {
+			return
+		}
+	}
+	defaultLoggerFactory = f
+	defaultLoggerInstance = nil
+}
+
+// LockDefaultFactory 锁定当前的默认 Logger 工厂
+func LockDefaultFactory() {
+	defaultLoggerLocked = true
+}
+
+// 获取默认的日志工厂
+func getDefaultLoggerFactory() LoggerFactory {
+	f := defaultLoggerFactory
+	if f == nil {
+		f = &SimpleLoggerFactory{}
+		defaultLoggerFactory = f
+	}
+	return f
 }
 
 // Default 获取默认 Logger
 func Default() Logger {
 	logger := defaultLoggerInstance
 	if logger == nil {
-		logger = initSimpleDefaultLogger()
+		logger = getDefaultLoggerFactory().CreateLogger(nil)
 		defaultLoggerInstance = logger
 	}
 	return logger
-}
-
-func initSimpleDefaultLogger() Logger {
-	factory := &SimpleLoggerFactory{}
-	return factory.CreateLogger(factory)
 }
 
 // Debug 输出日志

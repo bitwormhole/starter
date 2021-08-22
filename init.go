@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/bitwormhole/starter/application"
-	"github.com/bitwormhole/starter/application/config"
+	"github.com/bitwormhole/starter/application/bootstrap"
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/vlog"
 )
@@ -50,7 +50,7 @@ func (inst *innerInitializer) Run() {
 
 func (inst *innerInitializer) init() application.Initializer {
 	inst.modules = createModuleManager()
-	inst.cfgBuilder = config.NewBuilder()
+	inst.cfgBuilder = bootstrap.ConfigBuilder() // config.NewBuilder()
 	inst.loadBasicProperties()
 	return inst
 }
@@ -66,7 +66,6 @@ func (inst *innerInitializer) loadBasicProperties() {
 	dp.SetProperty("application.name", appname)
 	dp.SetProperty("host.name", hostname)
 
-	vlog.Info("Starting [", appname, "] using ", goVer, " on ", hostname)
 }
 
 func (inst *innerInitializer) loadPropGoVersion() string {

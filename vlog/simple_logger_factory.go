@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// SimpleLoggerFactory 是一个简单的日志工厂
 type SimpleLoggerFactory struct {
 	level Level
 	chain FilterChain
@@ -123,26 +124,50 @@ func (inst *simpleLogger) SetSource(s interface{}) {
 }
 
 func (inst *simpleLogger) Debug(a ...interface{}) Logger {
+
+	if !inst.IsDebugEnabled() {
+		return inst
+	}
 	return inst.append(DEBUG, a)
 }
 
 func (inst *simpleLogger) Error(a ...interface{}) Logger {
+
+	if !inst.IsErrorEnabled() {
+		return inst
+	}
 	return inst.append(ERROR, a)
 }
 
 func (inst *simpleLogger) Fatal(a ...interface{}) Logger {
+
+	if !inst.IsFatalEnabled() {
+		return inst
+	}
 	return inst.append(FATAL, a)
 }
 
 func (inst *simpleLogger) Info(a ...interface{}) Logger {
+
+	if !inst.IsInfoEnabled() {
+		return inst
+	}
 	return inst.append(INFO, a)
 }
 
 func (inst *simpleLogger) Trace(a ...interface{}) Logger {
+
+	if !inst.IsTraceEnabled() {
+		return inst
+	}
 	return inst.append(TRACE, a)
 }
 
 func (inst *simpleLogger) Warn(a ...interface{}) Logger {
+
+	if !inst.IsWarnEnabled() {
+		return inst
+	}
 	return inst.append(WARN, a)
 }
 
@@ -168,4 +193,20 @@ func (inst *simpleLogger) IsTraceEnabled() bool {
 
 func (inst *simpleLogger) IsWarnEnabled() bool {
 	return inst.isLevelEnabled(WARN)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// NewSimpleLoggerFactory 新建一个显示指定级别日志信息的简单logger工厂
+func NewSimpleLoggerFactory(enableLevel Level) LoggerFactory {
+	f := &SimpleLoggerFactory{}
+	f.init()
+	f.level = enableLevel
+	return f
+}
+
+// UseSimpleLogger 设置日志系统使用简单的logger工厂
+func UseSimpleLogger(enableLevel Level) {
+	f := NewSimpleLoggerFactory(enableLevel)
+	SetDefaultFactory(f)
 }
