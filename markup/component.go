@@ -33,3 +33,29 @@ type Repository struct {
 type DataSource struct {
 	Component
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+// IsComponentMark 判断给定的名称是不是一个组件标志
+func IsComponentMark(mark string) bool {
+	switch mark {
+	case "Component":
+	case "Controller":
+	case "RestController":
+	case "Repository":
+	case "DataSource":
+		break
+	default:
+		return false
+	}
+	return true
+}
+
+// IsComponentMarkWithPackage 判断给定的名称（以及包名）是不是一个组件标志
+func IsComponentMarkWithPackage(pkg string, mark string) bool {
+	const regName = "github.com/bitwormhole/starter/markup"
+	if pkg != regName {
+		return false
+	}
+	return IsComponentMark(mark)
+}
