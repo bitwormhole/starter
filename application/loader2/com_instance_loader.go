@@ -18,6 +18,7 @@ type comInstanceHolder struct {
 type comInstanceLoader struct {
 	context    application.Context
 	pool       lang.ReleasePool
+	lastErr    error
 	cache      map[string]*comInstanceHolder
 	todoInject []application.ComponentInstance
 	todoInit   []application.ComponentInstance
@@ -47,6 +48,17 @@ func (inst *comInstanceLoader) Context() application.Context {
 	return inst.context
 }
 
+func (inst *comInstanceLoader) LastError() error {
+	return inst.lastErr
+}
+
+func (inst *comInstanceLoader) HandleError(err error) {
+	if err == nil {
+		return
+	}
+	inst.lastErr = err
+}
+
 func (inst *comInstanceLoader) GetString(selector string) (string, error) {
 	const prefix = "${"
 	const suffix = "}"
@@ -71,6 +83,23 @@ func (inst *comInstanceLoader) GetBool(selector string) (bool, error) {
 	str = strings.ToLower(str)
 	b := (str == "true") || (str == "1") || (str == "yes") || (str == "y")
 	return b, nil
+}
+
+func (inst *comInstanceLoader) GetFloat32(selector string) (float32, error) {
+	value, err := inst.GetFloat64(selector)
+	if err != nil {
+		return 0, err
+	}
+	return float32(value), nil
+}
+
+func (inst *comInstanceLoader) GetFloat64(selector string) (float64, error) {
+	str, err := inst.GetString(selector)
+	if err != nil {
+		return 0, err
+	}
+	str = strings.TrimSpace(str)
+	return strconv.ParseFloat(str, 64)
 }
 
 func (inst *comInstanceLoader) getIntXX(selector string, base int, bits int) (int64, error) {

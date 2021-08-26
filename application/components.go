@@ -55,6 +55,9 @@ type InstanceContext interface {
 	Context() Context
 	Pool() lang.ReleasePool
 
+	HandleError(err error)
+	LastError() error
+
 	// AddInstance(instance ComponentInstance)
 
 	GetComponent(selector string) (lang.Object, error)
@@ -65,6 +68,8 @@ type InstanceContext interface {
 	GetInt16(selector string) (int16, error)
 	GetInt32(selector string) (int32, error)
 	GetInt64(selector string) (int64, error)
+	GetFloat32(selector string) (float32, error)
+	GetFloat64(selector string) (float64, error)
 	GetBool(selector string) (bool, error)
 	GetString(selector string) (string, error)
 }
