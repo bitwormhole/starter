@@ -125,6 +125,16 @@ func (inst *comInstanceLoader) GetInt(selector string) (int, error) {
 	return int(n), nil
 }
 
+func (inst *comInstanceLoader) GetInt8(selector string) (int8, error) {
+	const base = 10
+	const bits = 8
+	n, err := inst.getIntXX(selector, base, bits)
+	if err != nil {
+		return 0, err
+	}
+	return int8(n), nil
+}
+
 func (inst *comInstanceLoader) GetInt16(selector string) (int16, error) {
 	const base = 10
 	const bits = 16

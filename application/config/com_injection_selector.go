@@ -10,10 +10,15 @@ type InjectionSelector interface {
 	GetOne(context application.InstanceContext) lang.Object
 	GetList(context application.InstanceContext) []lang.Object
 
-	GetFloat64(context application.InstanceContext) float64
 	GetString(context application.InstanceContext) string
 	GetBool(context application.InstanceContext) bool
+	GetFloat32(context application.InstanceContext) float32
+	GetFloat64(context application.InstanceContext) float64
 	GetInt(context application.InstanceContext) int
+	GetInt8(context application.InstanceContext) int8
+	GetInt16(context application.InstanceContext) int16
+	GetInt32(context application.InstanceContext) int32
+	GetInt64(context application.InstanceContext) int64
 }
 
 // NewInjectionSelector 新建一个注射选择器
@@ -74,6 +79,51 @@ func (inst *innerInjectionSelector) GetBool(context application.InstanceContext)
 
 func (inst *innerInjectionSelector) GetInt(context application.InstanceContext) int {
 	value, err := context.GetInt(inst.selector)
+	if err != nil {
+		context.HandleError(err)
+		return 0
+	}
+	return value
+}
+
+func (inst *innerInjectionSelector) GetInt8(context application.InstanceContext) int8 {
+	value, err := context.GetInt8(inst.selector)
+	if err != nil {
+		context.HandleError(err)
+		return 0
+	}
+	return value
+}
+
+func (inst *innerInjectionSelector) GetInt16(context application.InstanceContext) int16 {
+	value, err := context.GetInt16(inst.selector)
+	if err != nil {
+		context.HandleError(err)
+		return 0
+	}
+	return value
+}
+
+func (inst *innerInjectionSelector) GetInt32(context application.InstanceContext) int32 {
+	value, err := context.GetInt32(inst.selector)
+	if err != nil {
+		context.HandleError(err)
+		return 0
+	}
+	return value
+}
+
+func (inst *innerInjectionSelector) GetInt64(context application.InstanceContext) int64 {
+	value, err := context.GetInt64(inst.selector)
+	if err != nil {
+		context.HandleError(err)
+		return 0
+	}
+	return value
+}
+
+func (inst *innerInjectionSelector) GetFloat32(context application.InstanceContext) float32 {
+	value, err := context.GetFloat32(inst.selector)
 	if err != nil {
 		context.HandleError(err)
 		return 0

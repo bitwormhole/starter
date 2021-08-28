@@ -65,6 +65,7 @@ type InstanceContext interface {
 	GetComponentsByFilter(selector string, f ComponentHolderFilter) ([]lang.Object, error)
 
 	GetInt(selector string) (int, error)
+	GetInt8(selector string) (int8, error)
 	GetInt16(selector string) (int16, error)
 	GetInt32(selector string) (int32, error)
 	GetInt64(selector string) (int64, error)
