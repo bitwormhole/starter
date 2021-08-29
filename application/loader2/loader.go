@@ -44,6 +44,12 @@ func (inst *contextLoading) load() (application.Context, error) {
 		return nil, err
 	}
 
+	vlog.Debug("load resources ...")
+	err = inst.loadResources()
+	if err != nil {
+		return nil, err
+	}
+
 	vlog.Debug("load logger ...")
 	err = inst.loadLogger()
 	if err != nil {
@@ -69,6 +75,13 @@ func (inst *contextLoading) load() (application.Context, error) {
 	}
 
 	return inst.context, nil
+}
+
+func (inst *contextLoading) loadResources() error {
+	src := inst.config.GetResources()
+	dst := inst.context.GetResources()
+	dst.Import(src.Export(nil), true)
+	return nil
 }
 
 func (inst *contextLoading) loadLogger() error {

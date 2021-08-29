@@ -1,4 +1,4 @@
-package etcstarter
+package starter
 
 import (
 	"strconv"
@@ -23,7 +23,7 @@ func ExportConfig(cb application.ConfigBuilder, module application.Module) error
 	dp.SetProperty("module.starter.version", module.GetVersion())
 	dp.SetProperty("module.starter.revision", strconv.Itoa(module.GetRevision()))
 
-	return nil //  autoGenConfig(cb)
+	return autoGenConfig(cb)
 }
 
 type theConfigenChecker struct {

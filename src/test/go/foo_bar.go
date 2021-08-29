@@ -27,12 +27,12 @@ type Bar struct {
 }
 
 func (inst *Bar) Start() error {
-	vlog.Debug("bar.start()")
+	vlog.Info("bar.start()")
 	return nil
 }
 
 func (inst *Bar) Stop() error {
-	vlog.Debug("bar.stop()")
+	vlog.Info("bar.stop()")
 	return nil
 }
 

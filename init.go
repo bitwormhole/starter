@@ -10,6 +10,7 @@ import (
 	"github.com/bitwormhole/starter/application/bootstrap"
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/vlog"
+	"github.com/bitwormhole/starter/vlog/std"
 )
 
 // InitApp 开始初始化应用程序
@@ -49,10 +50,15 @@ func (inst *innerInitializer) Run() {
 // private
 
 func (inst *innerInitializer) init() application.Initializer {
+	inst.initLogging()
 	inst.modules = createModuleManager()
 	inst.cfgBuilder = bootstrap.ConfigBuilder() // config.NewBuilder()
 	inst.loadBasicProperties()
 	return inst
+}
+
+func (inst *innerInitializer) initLogging() {
+	vlog.SetDefaultFactory(&std.StandardLoggerFactory{})
 }
 
 func (inst *innerInitializer) loadBasicProperties() {
@@ -112,8 +118,33 @@ func (inst *innerInitializer) applyModules(mods []application.Module) error {
 			return err
 		}
 		inst.writeModuleInfoToProperties(props, index, mod)
+		inst.tryLoadDefaultPropertiesFromRes(props, index, mod)
 	}
 	return nil
+}
+
+func (inst *innerInitializer) tryLoadDefaultPropertiesFromRes(props collection.Properties, index int, mod application.Module) {
+
+	vlog.Trace("try load 'default.properties' from module: " + mod.GetName())
+
+	r := mod.GetResources()
+	if r == nil {
+		return
+	}
+
+	text, err := r.GetText("default.properties")
+	if err != nil {
+		vlog.Warn(err, ", mod=", mod.GetName())
+		return
+	}
+
+	p, err := collection.ParseProperties(text, nil)
+	if err != nil {
+		vlog.Warn(err, ", mod=", mod.GetName())
+		return
+	}
+
+	props.Import(p.Export(nil))
 }
 
 func (inst *innerInitializer) writeModuleInfoToProperties(props collection.Properties, index int, mod application.Module) {
