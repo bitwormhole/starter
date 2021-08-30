@@ -8,8 +8,8 @@ import (
 
 const (
 	myName     = "github.com/bitwormhole/starter"
-	myVersion  = "v0.0.46"
-	myRevision = 46
+	myVersion  = "v0.0.47"
+	myRevision = 47
 )
 
 // Module 函数用于导出本模块
