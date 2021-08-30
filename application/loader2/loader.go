@@ -1,6 +1,9 @@
 package loader2
 
 import (
+	"os"
+	"strings"
+
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/vlog"
 )
@@ -38,8 +41,20 @@ func (inst *contextLoading) init(cfg application.Configuration, args []string) {
 
 func (inst *contextLoading) load() (application.Context, error) {
 
+	vlog.Debug("load args ...")
+	err := inst.loadArguments()
+	if err != nil {
+		return nil, err
+	}
+
+	vlog.Debug("load env ...")
+	err = inst.loadEnvironment()
+	if err != nil {
+		return nil, err
+	}
+
 	vlog.Debug("load properties ...")
-	err := inst.loadProperties()
+	err = inst.loadProperties()
 	if err != nil {
 		return nil, err
 	}
@@ -97,6 +112,28 @@ func (inst *contextLoading) loadBanner() error {
 func (inst *contextLoading) loadAboutInfo() error {
 	loader := &aboutInfoLoader{}
 	return loader.load(inst)
+}
+
+func (inst *contextLoading) loadArguments() error {
+	ctx := inst.context
+	ctx.GetArguments().Import(os.Args)
+	return nil
+}
+
+func (inst *contextLoading) loadEnvironment() error {
+	ctx := inst.context
+	dst := ctx.GetEnvironment()
+	src := os.Environ()
+	for _, kv := range src {
+		index := strings.Index(kv, "=")
+		if index < 0 {
+			continue
+		}
+		key := strings.TrimSpace(kv[0:index])
+		val := strings.TrimSpace(kv[index+1:])
+		dst.SetEnv(key, val)
+	}
+	return nil
 }
 
 func (inst *contextLoading) loadProperties() error {
