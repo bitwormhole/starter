@@ -9,6 +9,7 @@ import (
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/application/bootstrap"
 	"github.com/bitwormhole/starter/collection"
+	"github.com/bitwormhole/starter/lang"
 	"github.com/bitwormhole/starter/vlog"
 	"github.com/bitwormhole/starter/vlog/std"
 )
@@ -18,6 +19,7 @@ func InitApp() application.Initializer {
 	inst := &innerInitializer{}
 	i := inst.init()
 	i.Use(Module())
+	i.UsePanic()
 	return i
 }
 
@@ -26,6 +28,7 @@ func InitApp() application.Initializer {
 type innerInitializer struct {
 	modules    *moduleManager
 	cfgBuilder application.ConfigBuilder
+	errHandler lang.ErrorHandler
 }
 
 // public
@@ -35,8 +38,22 @@ func (inst *innerInitializer) SetAttribute(name string, value interface{}) appli
 	return inst
 }
 
+func (inst *innerInitializer) SetErrorHandler(h lang.ErrorHandler) application.Initializer {
+	inst.cfgBuilder.SetErrorHandler(h)
+	inst.errHandler = h
+	return inst
+}
+
 func (inst *innerInitializer) Use(module application.Module) application.Initializer {
 	inst.modules.use(module, true)
+	return inst
+}
+
+func (inst *innerInitializer) UsePanic() application.Initializer {
+	h := lang.NewErrorHandlerForFunc(func(err error) error {
+		panic(err) // return err
+	})
+	inst.SetErrorHandler(h)
 	return inst
 }
 
@@ -45,6 +62,15 @@ func (inst *innerInitializer) Run() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (inst *innerInitializer) RunEx() (application.Runtime, error) {
+	rt1 := &innerAppRuntime{}
+	rt2, err := rt1.initAndRun(inst)
+	if err != nil {
+		return nil, err
+	}
+	return rt2, nil
 }
 
 // private
@@ -164,36 +190,101 @@ func (inst *innerInitializer) writeModuleInfoToProperties(props collection.Prope
 
 func (inst *innerInitializer) inTryRun() error {
 
+	rt, err := inst.RunEx()
+	if err != nil {
+		return err
+	}
+
+	err = rt.Loop()
+	if err != nil {
+		return err
+	}
+
+	err = rt.Exit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (inst *innerInitializer) prepareConfig() (application.Configuration, error) {
+
 	mods := inst.modules.listAll()
 
 	err := inst.loadResourcesFromModules(mods)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = inst.applyModules(mods)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	cfg := inst.cfgBuilder.Create()
-	context, err := application.Run(cfg, os.Args)
-	if err != nil {
+	return cfg, nil
+}
+
+func (inst *innerInitializer) handleError(err error) error {
+	if err == nil {
+		return nil
+	}
+	h := inst.errHandler
+	if h == nil {
 		return err
 	}
-
-	err = application.Loop(context)
-	if err != nil {
-		return err
-	}
-
-	code, err := application.Exit(context)
-	if err != nil {
-		return err
-	}
-
-	vlog.Info("exit with code:", code)
-	return nil
+	return h.HandleError(err)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+type innerAppRuntime struct {
+	parent  *innerInitializer
+	context application.Context
+}
+
+func (inst *innerAppRuntime) initAndRun(parent *innerInitializer) (application.Runtime, error) {
+
+	cfg, err := parent.prepareConfig()
+	if err != nil {
+		err = inst.parent.handleError(err)
+		return nil, err
+	}
+
+	ctx, err := application.Run(cfg, os.Args)
+	if err != nil {
+		err = inst.parent.handleError(err)
+		return nil, err
+	}
+
+	inst.context = ctx
+	inst.parent = parent
+	return inst, nil
+}
+
+func (inst *innerAppRuntime) Context() application.Context {
+	return inst.context
+}
+
+func (inst *innerAppRuntime) Loop() error {
+	ctx := inst.context
+	err := application.Loop(ctx)
+	if err != nil {
+		err = inst.parent.handleError(err)
+		return err
+	}
+	return nil
+}
+
+func (inst *innerAppRuntime) Exit() error {
+	ctx := inst.context
+	code, err := application.Exit(ctx)
+	if err != nil {
+		err = inst.parent.handleError(err)
+		return err
+	}
+	vlog.Info("exit with code:", code)
+	os.Exit(code)
+	return nil
+}

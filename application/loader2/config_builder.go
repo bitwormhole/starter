@@ -3,6 +3,7 @@ package loader2
 import (
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/collection"
+	"github.com/bitwormhole/starter/lang"
 )
 
 // ConfigBuilder 函数新建一个v2的application.ConfigBuilder对象
@@ -14,15 +15,7 @@ func ConfigBuilder() application.ConfigBuilder {
 ////////////////////////////////////////////////////////////////////////////////
 
 type configBuilderV2 struct {
-
-	// enablePropFromArgs bool
-	// components         []application.ComponentInfo
-	// defaultProps       collection.Properties
-	// resources          collection.Resources
-	// attributes         collection.Attributes
-
-	/////////////
-
+	hError                       lang.ErrorHandler
 	components                   []application.ComponentInfo
 	resources                    collection.Resources
 	properties                   collection.Properties
@@ -55,6 +48,10 @@ func (inst *configBuilderV2) SetResources(res collection.Resources) {
 
 func (inst *configBuilderV2) SetAttribute(name string, value interface{}) {
 	inst.attributes.SetAttribute(name, value)
+}
+
+func (inst *configBuilderV2) SetErrorHandler(h lang.ErrorHandler) {
+	inst.hError = h
 }
 
 func (inst *configBuilderV2) SetEnableLoadPropertiesFromArguments(enable bool) {

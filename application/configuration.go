@@ -1,6 +1,9 @@
 package application
 
-import "github.com/bitwormhole/starter/collection"
+import (
+	"github.com/bitwormhole/starter/collection"
+	"github.com/bitwormhole/starter/lang"
+)
 
 // Configuration 表示应用程序配置
 type Configuration interface {
@@ -10,6 +13,7 @@ type Configuration interface {
 	GetAttributes() collection.Attributes
 	GetEnvironment() collection.Environment
 	GetDefaultProperties() collection.Properties
+	GetErrorHandler() lang.ErrorHandler
 	IsEnableLoadPropertiesFromArguments() bool
 }
 
@@ -23,6 +27,8 @@ type ConfigBuilder interface {
 	AddComponent(info ComponentInfo)
 	SetResources(res collection.Resources)
 	SetAttribute(name string, value interface{})
+
+	SetErrorHandler(h lang.ErrorHandler)
 
 	SetEnableLoadPropertiesFromArguments(enable bool)
 	IsEnableLoadPropertiesFromArguments() bool

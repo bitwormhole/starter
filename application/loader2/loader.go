@@ -37,6 +37,7 @@ func (inst *contextLoading) init(cfg application.Configuration, args []string) {
 	inst.arguments = args
 	inst.config = cfg
 	inst.context = ctx.init()
+	inst.context.SetErrorHandler(cfg.GetErrorHandler())
 }
 
 func (inst *contextLoading) load() (application.Context, error) {
@@ -53,14 +54,14 @@ func (inst *contextLoading) load() (application.Context, error) {
 		return nil, err
 	}
 
-	vlog.Debug("load properties ...")
-	err = inst.loadProperties()
+	vlog.Debug("load resources ...")
+	err = inst.loadResources()
 	if err != nil {
 		return nil, err
 	}
 
-	vlog.Debug("load resources ...")
-	err = inst.loadResources()
+	vlog.Debug("load properties ...")
+	err = inst.loadProperties()
 	if err != nil {
 		return nil, err
 	}

@@ -6,18 +6,21 @@ import (
 
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/collection"
+	"github.com/bitwormhole/starter/lang"
 )
 
 type configuration struct {
 	cb     *configBuilderV2
 	loader application.ContextLoader
 	env    collection.Environment
+	hError lang.ErrorHandler
 }
 
 func (inst *configuration) init(cb *configBuilderV2) application.Configuration {
 	inst.cb = cb
 	inst.loader = &loader{}
 	inst.env = inst.loadEnv()
+	inst.hError = cb.hError
 	return inst
 }
 
@@ -33,6 +36,10 @@ func (inst *configuration) loadEnv() collection.Environment {
 		}
 	}
 	return env
+}
+
+func (inst *configuration) GetErrorHandler() lang.ErrorHandler {
+	return inst.hError
 }
 
 func (inst *configuration) GetLoader() application.ContextLoader {

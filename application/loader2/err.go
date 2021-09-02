@@ -11,6 +11,7 @@ func (inst *defaultErrorHandler) _Impl() lang.ErrorHandler {
 	return inst
 }
 
-func (inst *defaultErrorHandler) OnError(err error) {
+func (inst *defaultErrorHandler) HandleError(err error) error {
 	vlog.Error(err.Error())
+	return err
 }
