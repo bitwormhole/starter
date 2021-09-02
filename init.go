@@ -248,13 +248,13 @@ func (inst *innerAppRuntime) initAndRun(parent *innerInitializer) (application.R
 
 	cfg, err := parent.prepareConfig()
 	if err != nil {
-		err = inst.parent.handleError(err)
+		err = parent.handleError(err)
 		return nil, err
 	}
 
 	ctx, err := application.Run(cfg, os.Args)
 	if err != nil {
-		err = inst.parent.handleError(err)
+		err = parent.handleError(err)
 		return nil, err
 	}
 
