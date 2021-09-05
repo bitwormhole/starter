@@ -20,15 +20,17 @@ func InitApp() application.Initializer {
 	i := inst.init()
 	i.Use(Module())
 	i.UsePanic()
+	i.SetExitEnabled(true)
 	return i
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 type innerInitializer struct {
-	modules    *moduleManager
-	cfgBuilder application.ConfigBuilder
-	errHandler lang.ErrorHandler
+	modules       *moduleManager
+	cfgBuilder    application.ConfigBuilder
+	errHandler    lang.ErrorHandler
+	osExitEnabled bool
 }
 
 // public
@@ -44,8 +46,23 @@ func (inst *innerInitializer) SetErrorHandler(h lang.ErrorHandler) application.I
 	return inst
 }
 
+func (inst *innerInitializer) SetExitEnabled(en bool) application.Initializer {
+	inst.osExitEnabled = en
+	return inst
+}
+
 func (inst *innerInitializer) Use(module application.Module) application.Initializer {
 	inst.modules.use(module, true)
+	return inst
+}
+
+func (inst *innerInitializer) UseProperties(p collection.Properties) application.Initializer {
+	inst.cfgBuilder.AddProperties(p)
+	return inst
+}
+
+func (inst *innerInitializer) UseResources(r collection.Resources) application.Initializer {
+	inst.cfgBuilder.AddResources(r)
 	return inst
 }
 
@@ -285,6 +302,8 @@ func (inst *innerAppRuntime) Exit() error {
 		return err
 	}
 	vlog.Info("exit with code:", code)
-	os.Exit(code)
+	if inst.parent.osExitEnabled {
+		os.Exit(code)
+	}
 	return nil
 }

@@ -1,6 +1,7 @@
 package loader2
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/bitwormhole/starter/collection"
@@ -61,28 +62,74 @@ func (inst *propertiesLoader) loadFromRes2() error {
 	return inst.loadFromRes("application-" + profile + ".properties")
 }
 
+// 取指定的属性，并转为 bool 值
+func (inst *propertiesLoader) getBool(name string, p collection.Properties) bool {
+	if p == nil {
+		return false
+	}
+	text, err := p.GetPropertyRequired(name)
+	if err != nil {
+		return false
+	}
+	text = strings.TrimSpace(text)
+	text = strings.ToLower(text)
+	if text == "true" || text == "1" || text == "yes" {
+		return true
+	}
+	return false
+}
+
+// 从指定的文件加载属性，存入到dst
+func (inst *propertiesLoader) loadFromFilePath(path string, dst collection.Properties) error {
+
+	file := fs.Default().GetPath(path)
+
+	if !file.IsFile() {
+		return errors.New("the file is not exists, path=" + file.Path())
+	}
+
+	vlog.Info("load application.Properties from ", file.Path())
+	text, err := file.GetIO().ReadText(nil)
+
+	if err != nil {
+		return nil
+	}
+
+	_, err = collection.ParseProperties(text, dst)
+	return err
+}
+
 func (inst *propertiesLoader) loadFromFile() error {
 
-	const key = "application.properties.file"
+	const keyPath = "application.properties.file.path"
+	const keyEnabled = "application.properties.file.enabled"
+	const keyRequired = "application.properties.file.required"
+
 	ctx := inst.loading.context
 	props := ctx.GetProperties()
 
-	path, err := props.GetPropertyRequired(key)
-	if err != nil {
+	enabled := inst.getBool(keyEnabled, props)
+	required := inst.getBool(keyRequired, props)
+
+	if !enabled {
 		return nil
 	}
 
-	file := fs.Default().GetPath(path)
-	if !file.IsFile() {
-		return nil
-	}
-	vlog.Info("load application.Properties from ", file.Path())
-
-	text, err := file.GetIO().ReadText(nil)
+	path, err := props.GetPropertyRequired(keyPath)
 	if err != nil {
+		if required {
+			return err
+		}
 		return nil
 	}
-	collection.ParseProperties(text, props)
+
+	err = inst.loadFromFilePath(path, props)
+	if err != nil {
+		if required {
+			return err
+		}
+		return nil
+	}
 
 	inst.loadFromArgs()
 	return nil

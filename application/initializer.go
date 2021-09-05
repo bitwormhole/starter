@@ -1,19 +1,23 @@
 package application
 
-import "github.com/bitwormhole/starter/lang"
+import (
+	"github.com/bitwormhole/starter/collection"
+	"github.com/bitwormhole/starter/lang"
+)
 
 // Initializer 是应用程序的启动器
 type Initializer interface {
-
-	// EmbedResources(fs *embed.FS, path string) Initializer
-	// MountResources(res collection.Resources) Initializer
+	Run()
+	RunEx() (Runtime, error)
 
 	SetErrorHandler(h lang.ErrorHandler) Initializer
 	SetAttribute(name string, value interface{}) Initializer
+	SetExitEnabled(enabled bool) Initializer
+
+	UseResources(res collection.Resources) Initializer
+	UseProperties(res collection.Properties) Initializer
 	Use(module Module) Initializer
 	UsePanic() Initializer
-	Run()
-	RunEx() (Runtime, error)
 }
 
 // Runtime 提供运行应用程序的更多选项

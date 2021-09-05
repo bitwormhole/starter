@@ -11,7 +11,10 @@ import (
 func TestingStarter(t *testing.T) Initializer {
 	i := starter.InitApp()
 	i.SetErrorHandler(makeTestingErrorHandler(t))
-	return WrapInitializer(i, t)
+	i.SetExitEnabled(false)
+	wrapper := WrapInitializer(i, t)
+	wrapper.LoadPropertisFromGitConfig(false)
+	return wrapper
 }
 
 func makeTestingErrorHandler(t *testing.T) lang.ErrorHandler {

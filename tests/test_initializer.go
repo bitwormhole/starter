@@ -8,6 +8,7 @@ import (
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/io/fs"
 	"github.com/bitwormhole/starter/lang"
+	"github.com/bitwormhole/starter/vlog"
 )
 
 // Initializer 是对 application.Initializer 的扩展，添加了几个用于测试的功能
@@ -15,10 +16,10 @@ type Initializer interface {
 	application.Initializer
 
 	T() *testing.T
-	UseResourcesFS(efs embed.FS, path string)
-	UseResources(res collection.Resources)
+	UseResourcesFS(efs *embed.FS, path string) Initializer
 	PrepareTestingDir(res string) fs.Path
 	PrepareTestingDirZip(zip string) fs.Path
+	LoadPropertisFromGitConfig(required bool) Initializer
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,12 +48,31 @@ func (inst *innerInitializerWrapper) SetAttribute(name string, value interface{}
 	return inst.inner.SetAttribute(name, value)
 }
 
+func (inst *innerInitializerWrapper) SetExitEnabled(en bool) application.Initializer {
+	inst.inner.SetExitEnabled(en)
+	return inst
+}
+
 func (inst *innerInitializerWrapper) Use(module application.Module) application.Initializer {
 	return inst.inner.Use(module)
 }
 
 func (inst *innerInitializerWrapper) UsePanic() application.Initializer {
 	return inst.inner.UsePanic()
+}
+
+func (inst *innerInitializerWrapper) LoadPropertisFromGitConfig(required bool) Initializer {
+	loader := &testPropertiesInGitLoader{}
+	src, err := loader.load()
+	if err != nil {
+		if required {
+			panic(err)
+		} else {
+			vlog.Warn(err)
+		}
+	}
+	inst.UseProperties(src)
+	return inst
 }
 
 func (inst *innerInitializerWrapper) Run() {
@@ -67,14 +87,20 @@ func (inst *innerInitializerWrapper) T() *testing.T {
 	return inst.t
 }
 
-func (inst *innerInitializerWrapper) UseResourcesFS(efs embed.FS, path string) {
-	panic("no impl")
-
+func (inst *innerInitializerWrapper) UseResourcesFS(efs *embed.FS, path string) Initializer {
+	r := collection.LoadEmbedResources(efs, path)
+	inst.UseResources(r)
+	return inst
 }
 
-func (inst *innerInitializerWrapper) UseResources(res collection.Resources) {
-	panic("no impl")
+func (inst *innerInitializerWrapper) UseResources(res collection.Resources) application.Initializer {
+	inst.inner.UseResources(res)
+	return inst
+}
 
+func (inst *innerInitializerWrapper) UseProperties(p collection.Properties) application.Initializer {
+	inst.inner.UseProperties(p)
+	return inst
 }
 
 func (inst *innerInitializerWrapper) PrepareTestingDir(res string) fs.Path {

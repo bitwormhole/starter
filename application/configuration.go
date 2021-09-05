@@ -25,6 +25,9 @@ type ContextLoader interface {
 // ConfigBuilder 表示应用程序配置
 type ConfigBuilder interface {
 	AddComponent(info ComponentInfo)
+	AddResources(res collection.Resources)
+	AddProperties(p collection.Properties)
+
 	SetResources(res collection.Resources)
 	SetAttribute(name string, value interface{})
 

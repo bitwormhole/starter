@@ -39,6 +39,32 @@ func (inst *configBuilderV2) AddComponent(info application.ComponentInfo) {
 	inst.components = append(inst.components, info)
 }
 
+func (inst *configBuilderV2) AddProperties(src collection.Properties) {
+	if src == nil {
+		return
+	}
+	dst := inst.properties
+	if dst == nil {
+		dst = collection.CreateProperties()
+		inst.properties = dst
+	}
+	list := src.Export(nil)
+	dst.Import(list)
+}
+
+func (inst *configBuilderV2) AddResources(src collection.Resources) {
+	if src == nil {
+		return
+	}
+	dst := inst.resources
+	if dst == nil {
+		dst = collection.CreateResources()
+		inst.resources = dst
+	}
+	list := src.Export(nil)
+	dst.Import(list, true)
+}
+
 func (inst *configBuilderV2) SetResources(res collection.Resources) {
 	if res == nil {
 		return
