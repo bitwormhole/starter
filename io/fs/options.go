@@ -4,8 +4,9 @@ import "os"
 
 // Options 包含文件系统IO的选项
 type Options struct {
-	Flag int
-	Mode os.FileMode
+	Create bool
+	Flag   int
+	Mode   os.FileMode
 }
 
 // Clone 返回一个Options的副本

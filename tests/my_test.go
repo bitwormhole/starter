@@ -1,25 +1,36 @@
 package tests
 
 import (
-	"errors"
 	"testing"
+
+	"github.com/bitwormhole/starter/src/test"
+	"github.com/bitwormhole/starter/vlog"
 )
 
-func TestMyself(t *testing.T) {
+func initRes(ti TestingInitializer) {
+	ti.UseResources(test.ExportResources())
+}
 
-	ctx := ContextForT(t)
+func TestWithDirData(t *testing.T) {
 
-	dir := ctx.TempDir()
-	ctx.Logger().Info("tempDir1=", dir.Path())
+	const path = "dirs/test1"
 
-	ctx.AddCaseFunc(func(ctx2 TestContext) error {
-		dir2 := ctx2.TempDir()
-		ctx2.Logger().Info("tempDir2=", dir2.Path())
-		return errors.New("bad for test")
-	})
+	i := Starter(t)
+	initRes(i)
+	rt := i.PrepareTestingDataFromResource(path).RunTest()
+	dir := rt.TestingDataDir()
 
-	err := ctx.Runner().Run(ctx)
-	if err != nil {
-		panic(err)
-	}
+	vlog.Info("testing.data.dir=", dir.Path())
+}
+
+func TestWithZipData(t *testing.T) {
+
+	const path = "dirs/test1.zip"
+
+	i := Starter(t)
+	initRes(i)
+	rt := i.PrepareTestingDataFromResource(path).RunTest()
+	dir := rt.TestingDataDir()
+
+	vlog.Info("testing.data.dir=", dir.Path())
 }

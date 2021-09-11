@@ -51,6 +51,15 @@ func (inst *innerInitializer) SetExitEnabled(en bool) application.Initializer {
 	return inst
 }
 
+func (inst *innerInitializer) SetPanicEnabled(en bool) application.Initializer {
+	if en {
+		inst.UsePanic()
+	} else {
+		inst.SetErrorHandler(nil)
+	}
+	return inst
+}
+
 func (inst *innerInitializer) Use(module application.Module) application.Initializer {
 	inst.modules.use(module, true)
 	return inst

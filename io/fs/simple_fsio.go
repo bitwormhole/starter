@@ -85,6 +85,9 @@ func (inst *innerFileIO) OpenWriter(opt *Options, mkdirs bool) (io.WriteCloser, 
 	inst.tryMkdirs(mkdirs)
 	opt = inst.prepareOptionsForWrite(opt)
 	path := inst.Path()
+	if opt.Create {
+		return os.Create(path.Path())
+	}
 	f, err := os.OpenFile(path.Path(), opt.Flag, opt.Mode)
 	if err != nil {
 		return nil, err

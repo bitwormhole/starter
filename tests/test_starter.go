@@ -7,12 +7,13 @@ import (
 	"github.com/bitwormhole/starter/lang"
 )
 
-// TestingStarter 创建一个测试用的启动器
-func TestingStarter(t *testing.T) Initializer {
+// Starter 创建一个测试用的启动器
+func Starter(t *testing.T) TestingInitializer {
 	i := starter.InitApp()
 	i.SetErrorHandler(makeTestingErrorHandler(t))
 	i.SetExitEnabled(false)
-	wrapper := WrapInitializer(i, t)
+	i.SetPanicEnabled(true)
+	wrapper := wrapInitializer(i, t)
 	wrapper.LoadPropertisFromGitConfig(false)
 	return wrapper
 }

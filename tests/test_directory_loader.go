@@ -2,143 +2,192 @@ package tests
 
 import (
 	"archive/zip"
-	"bytes"
-	"errors"
-	"io"
+	"crypto/sha256"
+	"strings"
 
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/io/fs"
+	"github.com/bitwormhole/starter/util"
 	"github.com/bitwormhole/starter/vlog"
 )
 
-// TestDirectoryLoader 测试目录加载器
-type TestDirectoryLoader struct {
-	r collection.Resources
-	t TestContext
-}
-
-// Init 初始化
-func (inst *TestDirectoryLoader) Init(r collection.Resources, t TestContext) {
-	inst.r = r
-	inst.t = t
-}
-
-// LoadFromFolder 从资源组中的文件夹加载测试目录
-func (inst *TestDirectoryLoader) LoadFromFolder(path string) (fs.Path, error) {
-
-	t := inst.t
-	r := inst.r
-	temp := t.TempDir()
-	items := r.List(path, true)
-	target := temp.GetChild("./" + path)
-
-	for _, item := range items {
-		dst := target.GetChild("./" + item.RelativePath)
-		if item.IsDir {
-			dst.Mkdirs()
-			continue
-		} else {
-			dir := dst.Parent()
-			if !dir.Exists() {
-				dir.Mkdirs()
-			}
-		}
-		data, err := r.GetBinary(item.AbsolutePath)
-		if err != nil {
-			return nil, err
-		}
-		err = dst.GetIO().WriteBinary(data, nil, true)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return target, nil
-}
-
-// LoadFromZipFile 从资源组中的压缩文件加载测试目录
-func (inst *TestDirectoryLoader) LoadFromZipFile(zipfile string) (fs.Path, error) {
-	r := inst.r
-	temp := inst.t.TempDir()
-	data, err := r.GetBinary(zipfile)
-	if err != nil {
-		return nil, err
-	}
-	target := temp.GetChild("./" + zipfile)
-	reader := inst.createReaderAt(data)
-	size := len(data)
-	zipReader, err := zip.NewReader(reader, int64(size))
-	if err != nil {
-		return nil, err
-	}
-	items := zipReader.File
-	for _, item := range items {
-		name := item.Name
-		output := target.GetChild(name)
-		if item.Mode().IsDir() {
-			output.Mkdirs()
-			continue
-		}
-		src, err := item.Open()
-		if err != nil {
-			return nil, err
-		}
-		defer src.Close()
-		entity := inst.readAll(src)
-		err = output.GetIO().WriteBinary(entity, nil, true)
-		if err != nil {
-			return nil, err
-		}
-		vlog.Debug("write to ", output.Path())
-		vlog.Debug("    size=", item.FileInfo().Size())
-	}
-	return target, nil
-}
-
-func (inst *TestDirectoryLoader) readAll(r io.ReadCloser) []byte {
-	dst := &bytes.Buffer{}
-	buffer := make([]byte, 1024)
-	for {
-		cb, err := r.Read(buffer)
-		if cb > 0 {
-			dst.Write(buffer[0:cb])
-		}
-		if err != nil {
-			break
-		}
-	}
-	return dst.Bytes()
-}
-
-func (inst *TestDirectoryLoader) createReaderAt(data []byte) io.ReaderAt {
-	r := &zipReaderAt{}
-	return r.init(data)
+type testingDataLoader interface {
+	Load(ctx TestingRuntime, name string, dst fs.Path) (fs.Path, error)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type zipReaderAt struct {
-	data   []byte
-	length int64
+type defaultTestingDataLoader struct {
 }
 
-func (inst *zipReaderAt) init(data []byte) io.ReaderAt {
-	inst.data = data
-	inst.length = int64(len(data))
-	return inst
-}
+func (inst *defaultTestingDataLoader) prepareDestinationDir(rt TestingRuntime, name string, dst fs.Path) fs.Path {
 
-func (inst *zipReaderAt) ReadAt(b []byte, p int64) (int, error) {
-	wantSize := int64(len(b))
-	if 0 <= p && p < (inst.length) {
-		size := inst.length - p
-		if size > wantSize {
-			size = wantSize
-		}
-		for i := int64(0); i < size; i++ {
-			b[i] = inst.data[p+i]
-		}
-		return int(size), nil
+	if dst != nil {
+		return dst
 	}
-	return 0, errors.New("out of buffer")
+
+	sum := sha256.Sum256([]byte(name))
+	hash := util.StringifyBytes(sum[0:3])
+
+	temp := rt.T().TempDir()
+	ref := fs.Default().GetPath(temp + "/" + name)
+	parent := ref.Parent()
+	shortName := ref.Name()
+
+	return parent.GetChild(shortName + "-" + hash)
 }
+
+func (inst *defaultTestingDataLoader) Load(ctx TestingRuntime, name string, dst fs.Path) (fs.Path, error) {
+
+	if name == "" {
+		// disable testing data
+		return nil, nil
+	}
+
+	dst = inst.prepareDestinationDir(ctx, name, dst)
+	if strings.HasSuffix(name, ".zip") {
+		loader := &zipTestingDirLoader{}
+		return loader.Load(ctx, name, dst)
+	}
+
+	loader := &sparseTestingDirLoader{}
+	return loader.Load(ctx, name, dst)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+type zipTestingDirLoading struct {
+	sourceZipName string
+	resources     collection.Resources
+	tmpZipFile    fs.Path
+	targetDir     fs.Path
+}
+
+type zipTestingDirLoader struct {
+}
+
+func (inst *zipTestingDirLoader) Load(rt TestingRuntime, name string, dst fs.Path) (fs.Path, error) {
+
+	res := rt.Context().GetResources()
+	parent := dst.Parent()
+	simpleName := dst.Name()
+	tmpZip := parent.GetChild(simpleName + ".zip")
+
+	loading := &zipTestingDirLoading{
+		resources:     res,
+		sourceZipName: name,
+		targetDir:     dst,
+		tmpZipFile:    tmpZip,
+	}
+
+	err := inst.prepareZipFile(loading)
+	if err != nil {
+		return nil, err
+	}
+
+	err = inst.unzip(loading)
+	if err != nil {
+		return nil, err
+	}
+
+	return dst, nil
+}
+
+func (inst *zipTestingDirLoader) prepareZipFile(loading *zipTestingDirLoading) error {
+	name := loading.sourceZipName
+	data, err := loading.resources.GetBinary(name)
+	if err != nil {
+		return err
+	}
+	file := loading.tmpZipFile
+	return file.GetIO().WriteBinary(data, nil, true)
+}
+
+func (inst *zipTestingDirLoader) unzip(loading *zipTestingDirLoading) error {
+	src := loading.tmpZipFile
+	dst := loading.targetDir
+	reader, err := zip.OpenReader(src.Path())
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+	items := reader.File
+	for _, item := range items {
+
+		target := dst.GetChild("./" + item.Name)
+		err = inst.writeItemTo(target, item)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (inst *zipTestingDirLoader) writeItemTo(to fs.Path, item *zip.File) error {
+	info := item.FileInfo()
+	if info.IsDir() {
+		to.Mkdirs()
+		return nil
+	}
+	// open reader
+	reader, err := item.Open()
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+	// open writer
+	opt := fs.Options{Create: true}
+	writer, err := to.GetIO().OpenWriter(&opt, true)
+	if err != nil {
+		return err
+	}
+	defer writer.Close()
+	// pump
+	buffer := make([]byte, 1024)
+	for {
+		cnt, _ := reader.Read(buffer)
+		if cnt > 0 {
+			writer.Write(buffer[0:cnt])
+		} else {
+			break
+		}
+	}
+	return nil
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+type sparseTestingDirLoader struct {
+}
+
+func (inst *sparseTestingDirLoader) Load(rt TestingRuntime, name string, dst fs.Path) (fs.Path, error) {
+	const r = true
+	res := rt.Context().GetResources()
+	items := res.List(name, r)
+	for _, item := range items {
+		target := dst.GetChild(item.RelativePath)
+		err := inst.writeItem(item, res, target)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return dst, nil
+}
+
+func (inst *sparseTestingDirLoader) writeItem(item *collection.Resource, res collection.Resources, target fs.Path) error {
+
+	if item.IsDir {
+		target.Mkdirs()
+		return nil
+	}
+
+	data, err := res.GetBinary(item.AbsolutePath)
+	if err != nil {
+		return err
+	}
+
+	vlog.Debug("write testing data to file ", target.Path())
+	return target.GetIO().WriteBinary(data, nil, true)
+}
+
+////////////////////////////////////////////////////////////////////////////////

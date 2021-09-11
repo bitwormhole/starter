@@ -15,11 +15,13 @@ func ConfigBuilder() application.ConfigBuilder {
 ////////////////////////////////////////////////////////////////////////////////
 
 type configBuilderV2 struct {
-	hError                       lang.ErrorHandler
-	components                   []application.ComponentInfo
-	resources                    collection.Resources
-	properties                   collection.Properties
-	attributes                   collection.Attributes
+	hError     lang.ErrorHandler
+	components []application.ComponentInfo
+
+	resources  collection.Resources
+	properties collection.Properties
+	attributes collection.Attributes
+
 	enableLoadPropertiesFromArgs bool
 }
 
@@ -66,10 +68,7 @@ func (inst *configBuilderV2) AddResources(src collection.Resources) {
 }
 
 func (inst *configBuilderV2) SetResources(res collection.Resources) {
-	if res == nil {
-		return
-	}
-	inst.resources = res
+	inst.AddResources(res)
 }
 
 func (inst *configBuilderV2) SetAttribute(name string, value interface{}) {

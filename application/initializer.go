@@ -13,6 +13,7 @@ type Initializer interface {
 	SetErrorHandler(h lang.ErrorHandler) Initializer
 	SetAttribute(name string, value interface{}) Initializer
 	SetExitEnabled(enabled bool) Initializer
+	SetPanicEnabled(enabled bool) Initializer
 
 	UseResources(res collection.Resources) Initializer
 	UseProperties(res collection.Properties) Initializer
