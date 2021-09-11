@@ -326,7 +326,7 @@ func (inst *innerPath) CreateFileWithSize(size int64, opt *Options) error {
 	}
 
 	opt = opt.Normalize()
-	file, err := os.OpenFile(inst.path, opt.Flag, opt.Mode)
+	file, err := os.Create(inst.path)
 	if err != nil {
 		return err
 	}

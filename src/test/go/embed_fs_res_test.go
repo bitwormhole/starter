@@ -10,6 +10,6 @@ import (
 // var res embed.FS
 
 func TestEmbedFsRes(t *testing.T) {
-	rt, _ := tests.TestingStarter(t).RunEx()
+	rt, _ := tests.Starter(t).RunEx()
 	rt.Loop()
 }

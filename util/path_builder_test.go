@@ -9,8 +9,8 @@ func TestPathBuilder(t *testing.T) {
 
 	builder := &PathBuilder{}
 	builder.EnableRoot(true)
-	builder.EnableDoubleDot(true)
 	builder.EnableTrim(true)
+	builder.IgnoreDoubleDot(false)
 
 	builder.AppendPath("abc/def/g")
 	builder.AppendPath("/   hijk ////")

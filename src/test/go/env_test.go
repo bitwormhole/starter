@@ -10,7 +10,8 @@ import (
 
 func TestEnv(t *testing.T) {
 
-	ts := tests.TestingStarter(t)
+	ts := tests.Starter(t)
+
 	ts.UsePanic()
 	rt, _ := ts.RunEx()
 	env := rt.Context().GetEnvironment()
@@ -22,7 +23,8 @@ func TestEnv(t *testing.T) {
 	if err == nil {
 		vlog.Debug(str)
 	} else {
-		rt.Context().GetErrorHandler().HandleError(err)
+		// rt.Context().GetErrorHandler().HandleError(err)
+		vlog.Warn(err)
 	}
 
 	for k, v := range all {

@@ -71,7 +71,7 @@ func TestPathIsDir(t *testing.T) {
 
 func TestPathIsFile(t *testing.T) {
 
-	dir := prepareDirForTest(t)
+	dir := Default().GetPath(t.TempDir())
 	file := dir.GetChild("test.path.isfile")
 
 	file.CreateFile(nil)

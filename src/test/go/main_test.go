@@ -13,7 +13,7 @@ func TestMain(t *testing.T) {
 	//	appinit := starter.InitApp()
 	vlog.Debug("src/test/go#main_test.go")
 
-	i := tests.TestingStarter(t)
+	i := tests.Starter(t)
 	i.UsePanic()
 	i.UseResources(test.ExportResources())
 	rt, _ := i.RunEx()

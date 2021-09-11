@@ -8,4 +8,5 @@ import (
 func Config(cb application.ConfigBuilder) error {
 	etcstarter.ExportConfig(cb, nil)
 	return autoGenConfig(cb)
+	// return nil
 }
