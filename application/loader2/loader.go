@@ -116,8 +116,12 @@ func (inst *contextLoading) loadAboutInfo() error {
 }
 
 func (inst *contextLoading) loadArguments() error {
+	args := inst.arguments
+	if args == nil {
+		args = os.Args
+	}
 	ctx := inst.context
-	ctx.GetArguments().Import(os.Args)
+	ctx.GetArguments().Import(args)
 	return nil
 }
 

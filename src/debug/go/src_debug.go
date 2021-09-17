@@ -6,6 +6,11 @@ import (
 )
 
 func main() {
+
+	// args := []string{"-a", "-r", "-g", "-s"}
+
 	vlog.Info("src/debug/go")
-	starter.InitApp().Use(starter.Module()).Use(innerModule()).Run()
+	i := starter.InitApp()
+	// i.SetArguments(args)
+	i.Use(starter.Module()).Use(innerModule()).Run()
 }

@@ -14,6 +14,7 @@ type Initializer interface {
 	SetAttribute(name string, value interface{}) Initializer
 	SetExitEnabled(enabled bool) Initializer
 	SetPanicEnabled(enabled bool) Initializer
+	SetArguments(args []string) Initializer
 
 	UseResources(res collection.Resources) Initializer
 	UseProperties(res collection.Properties) Initializer

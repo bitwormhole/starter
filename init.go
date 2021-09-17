@@ -31,6 +31,7 @@ type innerInitializer struct {
 	cfgBuilder    application.ConfigBuilder
 	errHandler    lang.ErrorHandler
 	osExitEnabled bool
+	arguments     []string
 }
 
 // public
@@ -57,6 +58,11 @@ func (inst *innerInitializer) SetPanicEnabled(en bool) application.Initializer {
 	} else {
 		inst.SetErrorHandler(nil)
 	}
+	return inst
+}
+
+func (inst *innerInitializer) SetArguments(args []string) application.Initializer {
+	inst.arguments = args
 	return inst
 }
 
@@ -278,7 +284,8 @@ func (inst *innerAppRuntime) initAndRun(parent *innerInitializer) (application.R
 		return nil, err
 	}
 
-	ctx, err := application.Run(cfg, os.Args)
+	args := parent.arguments
+	ctx, err := application.Run(cfg, args)
 	if err != nil {
 		err = parent.handleError(err)
 		return nil, err

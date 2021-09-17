@@ -49,6 +49,11 @@ func (inst *innerInitializerWrapper) SetPanicEnabled(enabled bool) application.I
 	return inst
 }
 
+func (inst *innerInitializerWrapper) SetArguments(args []string) application.Initializer {
+	inst.inner.SetArguments(args)
+	return inst
+}
+
 func (inst *innerInitializerWrapper) Use(module application.Module) application.Initializer {
 	return inst.inner.Use(module)
 }
