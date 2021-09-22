@@ -7,6 +7,7 @@ import (
 
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/lang"
+	"github.com/bitwormhole/starter/vlog"
 )
 
 type comInstanceHolder struct {
@@ -56,6 +57,7 @@ func (inst *comInstanceLoader) HandleError(err error) {
 	if err == nil {
 		return
 	}
+	vlog.Warn("comInstanceLoader.HandleError", err)
 	inst.lastErr = err
 }
 
