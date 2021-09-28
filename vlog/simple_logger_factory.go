@@ -2,7 +2,6 @@ package vlog
 
 import (
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -38,6 +37,7 @@ func (inst *SimpleLoggerFactory) CreateLogger(source interface{}) Logger {
 ////////////////////////////////////////////////////////////////////////////////
 
 type simpleChain struct {
+	formatter Formatter
 }
 
 func (inst *simpleChain) init() FilterChain {
@@ -49,15 +49,12 @@ func (inst *simpleChain) formatLevel(l Level) string {
 }
 
 func (inst *simpleChain) format(r *Record) string {
-
-	tt := time.Unix(r.Timestamp/1000, 0)
-	args := r.Arguments
-
-	builder := strings.Builder{}
-	builder.WriteString(tt.String())
-	builder.WriteString(" [" + inst.formatLevel(r.Level) + "] ")
-	builder.WriteString(fmt.Sprint(args...))
-	return builder.String()
+	fmt := inst.formatter
+	if fmt == nil {
+		fmt = &SimpleFormatter{}
+		inst.formatter = fmt
+	}
+	return fmt.Format(r)
 }
 
 func (inst *simpleChain) Append(r *Record) {

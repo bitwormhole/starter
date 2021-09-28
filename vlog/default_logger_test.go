@@ -3,5 +3,12 @@ package vlog
 import "testing"
 
 func TestDefaultLogger(t *testing.T) {
-	Debug("a", "b", 6, "c")
+
+	Fatal("fatal")
+	Error("error")
+	Warn("warn")
+	Info("i", "n", "f", "o")
+	Debug("debug")
+	Trace("trace")
+
 }
