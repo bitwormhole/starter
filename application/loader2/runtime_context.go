@@ -1,13 +1,23 @@
 package loader2
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/lang"
 	"github.com/bitwormhole/starter/util"
 )
 
+type appContextInner struct {
+	deadline time.Time
+	err      error
+}
+
 type appContext struct {
+	inner appContextInner
+
 	appName           string
 	appTitle          string
 	appURI            string
@@ -224,4 +234,32 @@ func (inst *appContext) GetComponentList(selector string) ([]lang.Object, error)
 	}
 
 	return objlist, nil
+}
+
+func (inst *appContext) Err() error {
+	return inst.inner.err
+}
+
+func (inst *appContext) Done() <-chan struct{} {
+	return nil
+}
+
+func (inst *appContext) Deadline() (time.Time, bool) {
+	return inst.inner.deadline, false
+}
+
+func (inst *appContext) Value(key interface{}) interface{} {
+	name, ok := key.(string)
+	if !ok {
+		name = fmt.Sprint(key)
+	}
+	return inst.GetValue(name)
+}
+
+func (inst *appContext) GetValue(key string) interface{} {
+	return inst.GetAttributes().GetAttribute(key)
+}
+
+func (inst *appContext) SetValue(key string, value interface{}) {
+	inst.GetAttributes().SetAttribute(key, value)
 }

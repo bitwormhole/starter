@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"context"
+	"errors"
 	"io"
 	"os"
 
@@ -27,32 +29,61 @@ type Console interface {
 	SetInput(r io.Reader)
 }
 
+// ConsoleFactory 是创建 Console 的工厂
+type ConsoleFactory interface {
+	Create() Console
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 // GetConsole  从上下文取控制台接口
-func GetConsole(ctx lang.Context) Console {
-	holder := getConsoleHolder(ctx)
-	return holder.getConsole(true)
+func GetConsole(ctx context.Context) (Console, error) {
+	holder, err := getConsoleHolder(ctx)
+	if err != nil {
+		return nil, err
+	}
+	console := holder.getConsole(true)
+	if console == nil {
+		return nil, errors.New("(create)console==nil")
+	}
+	return console, nil
+}
+
+// SetupConsole 从上下文取控制台接口
+func SetupConsole(ctx lang.Context, factory ConsoleFactory) error {
+	holder, err := getConsoleHolder(ctx)
+	if err != nil {
+		return err
+	}
+	holder.factory = factory
+	return nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 type consoleHolder struct {
 	console Console
+	factory ConsoleFactory
 }
 
-func getConsoleHolder(ctx lang.Context) *consoleHolder {
+func getConsoleHolder(ctx1 context.Context) (*consoleHolder, error) {
 
 	const key = "/bitwormhole/starter/cli/consoleHolder#binding"
 
-	o1 := ctx.GetValue(key)
+	o1 := ctx1.Value(key)
 	o2, ok := o1.(*consoleHolder)
 	if ok {
-		return o2
+		return o2, nil
 	}
+
+	ctx2, err := lang.GetContext(ctx1)
+	if err != nil {
+		return nil, err
+	}
+
 	holder := &consoleHolder{}
-	ctx.SetValue(key, holder)
-	return holder
+	ctx2.SetValue(key, holder)
+	return holder, nil
 }
 
 func (inst *consoleHolder) getConsole(create bool) Console {
@@ -66,9 +97,13 @@ func (inst *consoleHolder) getConsole(create bool) Console {
 }
 
 func (inst *consoleHolder) createConsole() Console {
-	console := &consoleImpl{}
-	console.init()
-	return console
+	factory := inst.factory
+	if factory == nil {
+		console := &consoleImpl{}
+		console.init()
+		return console
+	}
+	return factory.Create()
 }
 
 ////////////////////////////////////////////////////////////////////////////////

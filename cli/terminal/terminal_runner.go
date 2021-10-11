@@ -11,18 +11,22 @@ import (
 // Run 运行一个内嵌的terminal循环，直到exit
 func Run(app application.Context) error {
 
-	lc, err := lang.EditContext(nil)
-	if err != nil {
-		return err
-	}
+	var lc lang.Context = app
+	lang.SetupContext(lc)
+	cli.SetupConsole(lc, nil)
 
 	// app.GetComponents().FindComponentsWithFilter("", func(name string, holder application.ComponentHolder) bool {
 	// 	return true
 	// })
 
+	console, err := cli.GetConsole(lc)
+	if err != nil {
+		return err
+	}
+
 	ctx := &Context{}
 	ctx.app = app
-	ctx.console = cli.GetConsole(lc)
+	ctx.console = console
 	ctx.ctx = lc
 	ctx.prompt = "$"
 	ctx.exit = false

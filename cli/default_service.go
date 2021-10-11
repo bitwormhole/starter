@@ -23,7 +23,7 @@ type DefaultSerivce struct {
 	client       Client
 	chainFacade  FilterChain
 	chainInner   FilterChain
-	chainBuilder *filterChainBuilder
+	chainBuilder *FilterChainBuilder
 }
 
 func (inst *DefaultSerivce) _Impl() Service {
@@ -108,7 +108,7 @@ func (inst *DefaultSerivce) AddFilter(priority int, filter Filter) error {
 	if filter == nil {
 		return errors.New("filter==nil")
 	}
-	inst.getFilterChainBuilder().add(priority, filter)
+	inst.getFilterChainBuilder().Add(priority, filter)
 	return nil
 }
 
@@ -136,10 +136,10 @@ func (inst *DefaultSerivce) GetClient() Client {
 	return client
 }
 
-func (inst *DefaultSerivce) getFilterChainBuilder() *filterChainBuilder {
+func (inst *DefaultSerivce) getFilterChainBuilder() *FilterChainBuilder {
 	builder := inst.chainBuilder
 	if builder == nil {
-		builder = &filterChainBuilder{}
+		builder = &FilterChainBuilder{}
 		inst.chainBuilder = builder
 	}
 	return builder
@@ -175,5 +175,5 @@ func (inst *defaultSerivceFilterChainFacade) Handle(ctx *TaskContext) error {
 
 func (inst *defaultSerivceFilterChainFacade) makeInnerChain() FilterChain {
 	builder := inst.service.getFilterChainBuilder()
-	return builder.create()
+	return builder.Create(false)
 }

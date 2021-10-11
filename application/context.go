@@ -37,6 +37,7 @@ type ContextCollections interface {
 
 // Context 表示一个通用的上下文对象
 type Context interface {
+	lang.Context
 	ContextCollections
 	ContextInfo
 
@@ -58,7 +59,7 @@ type Context interface {
 	// ComponentLoader() ComponentLoader
 }
 
-// SimpleContext 【已废弃】用“context.Context” & “lang.Context” 代替
-type SimpleContext interface {
-	collection.Atts
-}
+// // SimpleContext 【已废弃】用“context.Context” & “lang.Context” 代替
+// type SimpleContext interface {
+// 	collection.Atts
+// }

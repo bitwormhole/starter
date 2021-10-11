@@ -41,16 +41,16 @@ type filterRegistration struct {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type filterChainBuilder struct {
+type FilterChainBuilder struct {
 	list    []*filterRegistration
 	reverse bool
 }
 
-func (inst *filterChainBuilder) Len() int {
+func (inst *FilterChainBuilder) Len() int {
 	return len(inst.list)
 }
 
-func (inst *filterChainBuilder) Less(a, b int) bool {
+func (inst *FilterChainBuilder) Less(a, b int) bool {
 	n1 := inst.list[a].priority
 	n2 := inst.list[b].priority
 	if inst.reverse {
@@ -59,14 +59,14 @@ func (inst *filterChainBuilder) Less(a, b int) bool {
 	return n1 < n2
 }
 
-func (inst *filterChainBuilder) Swap(a, b int) {
+func (inst *FilterChainBuilder) Swap(a, b int) {
 	item1 := inst.list[a]
 	item2 := inst.list[b]
 	inst.list[a] = item2
 	inst.list[b] = item1
 }
 
-func (inst *filterChainBuilder) add(priority int, filter Filter) {
+func (inst *FilterChainBuilder) Add(priority int, filter Filter) {
 	if filter == nil {
 		return
 	}
@@ -77,7 +77,8 @@ func (inst *filterChainBuilder) add(priority int, filter Filter) {
 	inst.list = append(inst.list, reg)
 }
 
-func (inst *filterChainBuilder) create() FilterChain {
+func (inst *FilterChainBuilder) Create(reverse bool) FilterChain {
+	inst.reverse = reverse
 	sort.Sort(inst)
 	list := inst.list
 	chain := (&filterChainEnding{})._Impl()
