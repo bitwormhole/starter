@@ -1,8 +1,0 @@
-package contexts
-
-import "context"
-
-type Binder interface {
-	Setup(ctx context.Context) error
-	Get() (context.Context, error)
-}

@@ -6,8 +6,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/bitwormhole/starter/contexts"
 	"github.com/bitwormhole/starter/io/fs"
-	"github.com/bitwormhole/starter/lang"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ func GetConsole(ctx context.Context) (Console, error) {
 }
 
 // SetupConsole 从上下文取控制台接口
-func SetupConsole(ctx lang.Context, factory ConsoleFactory) error {
+func SetupConsole(ctx context.Context, factory ConsoleFactory) error {
 	holder, err := getConsoleHolder(ctx)
 	if err != nil {
 		return err
@@ -76,13 +76,13 @@ func getConsoleHolder(ctx1 context.Context) (*consoleHolder, error) {
 		return o2, nil
 	}
 
-	ctx2, err := lang.GetContext(ctx1)
+	setter, err := contexts.GetContextSetter(ctx1)
 	if err != nil {
 		return nil, err
 	}
 
 	holder := &consoleHolder{}
-	ctx2.SetValue(key, holder)
+	setter.SetValue(key, holder)
 	return holder, nil
 }
 

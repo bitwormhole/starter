@@ -1,6 +1,8 @@
 package application
 
 import (
+	"context"
+
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/lang"
 )
@@ -37,7 +39,7 @@ type ContextCollections interface {
 
 // Context 表示一个通用的上下文对象
 type Context interface {
-	lang.Context
+	context.Context
 	ContextCollections
 	ContextInfo
 

@@ -5,11 +5,11 @@ import (
 	"strings"
 )
 
-type taskListBuilder struct {
+type TaskListBuilder struct {
 	list []*TaskUnit
 }
 
-func (inst *taskListBuilder) getList() []*TaskUnit {
+func (inst *TaskListBuilder) getList() []*TaskUnit {
 	list := inst.list
 	if list == nil {
 		list = make([]*TaskUnit, 0)
@@ -18,7 +18,7 @@ func (inst *taskListBuilder) getList() []*TaskUnit {
 	return list
 }
 
-func (inst *taskListBuilder) create() []*TaskUnit {
+func (inst *TaskListBuilder) Create() []*TaskUnit {
 	src := inst.getList()
 	dst := make([]*TaskUnit, 0)
 	for index, item := range src {
@@ -35,7 +35,7 @@ func (inst *taskListBuilder) create() []*TaskUnit {
 	return dst
 }
 
-func (inst *taskListBuilder) addLine(line string, index int, args []string) error {
+func (inst *TaskListBuilder) AddLine(line string, index int, args []string) error {
 
 	unit := &TaskUnit{}
 	unit.LineNumber = index + 1
@@ -48,7 +48,7 @@ func (inst *taskListBuilder) addLine(line string, index int, args []string) erro
 	return nil
 }
 
-func (inst *taskListBuilder) parseLine(line string, index int) error {
+func (inst *TaskListBuilder) parseLine(line string, index int) error {
 
 	args := make([]string, 0)
 	reader := &commandLineReader{}
@@ -69,10 +69,10 @@ func (inst *taskListBuilder) parseLine(line string, index int) error {
 		}
 	}
 
-	return inst.addLine(line, index, args)
+	return inst.AddLine(line, index, args)
 }
 
-func (inst *taskListBuilder) parseScript(script string) error {
+func (inst *TaskListBuilder) ParseScript(script string) error {
 	const ch1 = "\r"
 	const ch2 = "\n"
 	script = strings.ReplaceAll(script, ch1, ch2)

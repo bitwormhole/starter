@@ -1,6 +1,8 @@
 package cli
 
-import "github.com/bitwormhole/starter/lang"
+import (
+	"context"
+)
 
 // TaskUnit 表示一条简单的命令
 type TaskUnit struct {
@@ -12,14 +14,14 @@ type TaskUnit struct {
 
 // Task 表示将要执行的任务
 type Task struct {
-	Context  lang.Context
+	Context  context.Context
 	TaskList []*TaskUnit
 	Script   string
 }
 
 // TaskContext 表示正在执行的任务
 type TaskContext struct {
-	Context     lang.Context
+	Context     context.Context
 	CurrentTask *TaskUnit
 	Handler     Handler
 	Service     Service

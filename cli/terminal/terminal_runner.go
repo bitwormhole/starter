@@ -5,21 +5,18 @@ import (
 
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/cli"
-	"github.com/bitwormhole/starter/lang"
 )
 
 // Run 运行一个内嵌的terminal循环，直到exit
 func Run(app application.Context) error {
 
-	var lc lang.Context = app
-	lang.SetupContext(lc)
-	cli.SetupConsole(lc, nil)
+	cli.SetupConsole(app, nil)
 
 	// app.GetComponents().FindComponentsWithFilter("", func(name string, holder application.ComponentHolder) bool {
 	// 	return true
 	// })
 
-	console, err := cli.GetConsole(lc)
+	console, err := cli.GetConsole(app)
 	if err != nil {
 		return err
 	}
@@ -27,7 +24,7 @@ func Run(app application.Context) error {
 	ctx := &Context{}
 	ctx.app = app
 	ctx.console = console
-	ctx.ctx = lc
+	ctx.ctx = app
 	ctx.prompt = "$"
 	ctx.exit = false
 	ctx.client = nil // todo

@@ -19,10 +19,10 @@ func TestTaskListBuilder(t *testing.T) {
 	sb.WriteString("    example  -m='hello,world'    \n")
 	sb.WriteString("\n")
 
-	builder := &taskListBuilder{}
-	builder.parseScript(sb.String())
+	builder := &TaskListBuilder{}
+	builder.ParseScript(sb.String())
 
-	list := builder.create()
+	list := builder.Create()
 	for _, unit := range list {
 		args := unit.Arguments
 		vlog.Info("command-line num:", unit.LineNumber, " text:", unit.CommandLine)

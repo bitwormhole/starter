@@ -1,12 +1,16 @@
 package cli
 
+import "context"
+
 // Service 是用来处理命令的服务
 type Service interface {
 
 	// for handler
 
 	RegisterHandler(name string, h Handler) error
+
 	FindHandler(name string) (Handler, error)
+
 	GetHandlerNames() []string
 
 	// for filter
@@ -19,5 +23,7 @@ type Service interface {
 
 	// for client
 
-	GetClient() Client
+	GetClient(ctx context.Context) Client
+
+	GetClientFactory() ClientFactory
 }
