@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/bitwormhole/starter"
 	"github.com/bitwormhole/starter/application"
-	"github.com/bitwormhole/starter/cli/terminal"
+
 	"github.com/bitwormhole/starter/vlog"
 )
 
@@ -29,6 +29,5 @@ func run(ctx application.Context) error {
 
 	//os.Stdout.WriteString("")
 	//os.Stdin.SetReadDeadline(  )
-
-	return terminal.Run(ctx)
+	return nil
 }
