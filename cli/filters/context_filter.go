@@ -41,5 +41,13 @@ func (inst *ContextFilter) Handle(tc *cli.TaskContext, next cli.FilterChain) err
 		tc.Service = inst.Service
 	}
 
+	// for console
+	console, err := cli.GetConsole(tc.Context)
+	if err != nil {
+		return err
+	}
+	tc.Console = console
+
+	// next
 	return next.Handle(tc)
 }

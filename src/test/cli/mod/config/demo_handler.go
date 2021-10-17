@@ -1,8 +1,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/bitwormhole/starter/cli"
 	"github.com/bitwormhole/starter/markup"
 )
@@ -21,6 +19,9 @@ func (inst *DemoHandler) Init(service cli.Service) error {
 }
 
 func (inst *DemoHandler) Handle(c *cli.TaskContext) error {
-	fmt.Println("demo:hello!")
+
+	console := c.Console
+	console.Output().Write([]byte("demo:hello!"))
+
 	return nil
 }

@@ -14,19 +14,22 @@ import (
 
 // Console 接口表示一个跟上下文绑定的控制台
 type Console interface {
-	GetWD() string
-	SetWD(wd string)
-
-	GetWorkingPath() fs.Path
-	SetWorkingPath(wd fs.Path)
-
 	Error() io.Writer
 	Output() io.Writer
 	Input() io.Reader
 
+	GetWD() string
+	GetWorkingPath() fs.Path
+	GetLastError() error
+
+	SetWD(wd string)
+	SetWorkingPath(wd fs.Path)
 	SetError(w io.Writer)
 	SetOutput(w io.Writer)
 	SetInput(r io.Reader)
+
+	WriteString(str string)
+	WriteError(msg string, err error)
 }
 
 // ConsoleFactory 是创建 Console 的工厂
@@ -49,11 +52,14 @@ func GetConsole(ctx context.Context) (Console, error) {
 	return console, nil
 }
 
-// SetupConsole 从上下文取控制台接口
+// SetupConsole 设置控制台接口
 func SetupConsole(ctx context.Context, factory ConsoleFactory) error {
 	holder, err := getConsoleHolder(ctx)
 	if err != nil {
 		return err
+	}
+	if factory == nil {
+		factory = &defaultConsoleFactory{}
 	}
 	holder.factory = factory
 	return nil
@@ -108,12 +114,41 @@ func (inst *consoleHolder) createConsole() Console {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+type nopStream struct {
+}
+
+func (inst *nopStream) _Impl() (io.Writer, io.Reader) {
+	return inst, inst
+}
+
+func (inst *nopStream) Write(p []byte) (int, error) {
+	return 0, nil
+}
+
+func (inst *nopStream) Read(p []byte) (int, error) {
+	return 0, errors.New("EOF")
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+type defaultConsoleFactory struct {
+}
+
+func (inst *defaultConsoleFactory) Create() Console {
+	return &consoleImpl{}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 type consoleImpl struct {
-	pwd string
+	pwd     string
+	lastErr error
 
 	in  io.Reader
 	out io.Writer
 	err io.Writer
+
+	nop nopStream
 }
 
 func (inst *consoleImpl) _Impl() Console {
@@ -121,15 +156,27 @@ func (inst *consoleImpl) _Impl() Console {
 }
 
 func (inst *consoleImpl) Input() io.Reader {
-	return inst.in
+	i := inst.in
+	if i == nil {
+		i = &inst.nop
+	}
+	return i
 }
 
 func (inst *consoleImpl) Output() io.Writer {
-	return inst.out
+	o := inst.out
+	if o == nil {
+		o = &inst.nop
+	}
+	return o
 }
 
 func (inst *consoleImpl) Error() io.Writer {
-	return inst.err
+	e := inst.err
+	if e == nil {
+		e = &inst.nop
+	}
+	return e
 }
 
 func (inst *consoleImpl) SetInput(s io.Reader) {
@@ -151,6 +198,22 @@ func (inst *consoleImpl) SetError(s io.Writer) {
 		return
 	}
 	inst.err = s
+}
+
+func (inst *consoleImpl) WriteError(msg string, err error) {
+	if err != nil {
+		inst.lastErr = err
+		msg = msg + "\nerror:" + err.Error()
+	}
+	inst.Error().Write([]byte(msg))
+}
+
+func (inst *consoleImpl) WriteString(str string) {
+	inst.Output().Write([]byte(str))
+}
+
+func (inst *consoleImpl) GetLastError() error {
+	return inst.lastErr
 }
 
 func (inst *consoleImpl) init() error {

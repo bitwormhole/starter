@@ -26,6 +26,7 @@ type TaskContext struct {
 	Handler     Handler
 	Service     Service
 	TaskList    []*TaskUnit
+	Console     Console
 }
 
 // Clone 生成 TaskContext 的副本（浅拷贝）
@@ -36,6 +37,7 @@ func (inst *TaskContext) Clone() *TaskContext {
 		Handler:     inst.Handler,
 		Service:     inst.Service,
 		TaskList:    inst.TaskList,
+		Console:     inst.Console,
 	}
 	return child
 }

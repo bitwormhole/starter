@@ -18,5 +18,5 @@ func (inst *defaultExecutor) Execute(r Runnable) {
 	if r == nil {
 		return
 	}
-	r.Run()
+	go r.Run()
 }

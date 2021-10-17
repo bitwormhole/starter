@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/bitwormhole/starter/cli"
+	"github.com/bitwormhole/starter/contexts"
 	"github.com/bitwormhole/starter/src/test/cli/mod"
 	"github.com/bitwormhole/starter/tests"
 )
@@ -30,6 +31,9 @@ func doTestCLI(t *testing.T) error {
 	if err != nil {
 		return err
 	}
+
+	contexts.SetupApplicationContext(ctx)
+	cli.SetupConsole(ctx, nil)
 
 	factory := o1.(cli.Service).GetClientFactory()
 	client := factory.CreateClient(ctx)
