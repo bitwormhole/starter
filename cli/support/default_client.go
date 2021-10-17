@@ -127,14 +127,19 @@ func (inst *syncClientImpl) makeTaskContext(t *cli.Task) *cli.TaskContext {
 
 	script := t.Script
 	tasklist := t.TaskList
+	context := t.Context
 
 	if tasklist == nil {
 		task2 := inst.makeTaskWithScript(script)
 		tasklist = task2.TaskList
 	}
 
+	if context == nil {
+		context = inst.context
+	}
+
 	tc := &cli.TaskContext{}
-	tc.Context = t.Context
+	tc.Context = context
 	tc.TaskList = tasklist
 
 	return tc
