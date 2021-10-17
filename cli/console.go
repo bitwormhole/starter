@@ -97,6 +97,7 @@ func (inst *consoleHolder) getConsole(create bool) Console {
 	if console == nil {
 		if create {
 			console = inst.createConsole()
+			inst.console = console
 		}
 	}
 	return console
