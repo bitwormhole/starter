@@ -21,17 +21,16 @@ func (inst *innerWindowsPlatform) normalizePath(path string) (string, error) {
 	pb.SetSeparator(sep)
 	pb.AppendPath(path)
 	text, err := pb.Create("", "")
-	if err == nil {
-		if len(text) > 0 {
-			if strings.Contains(text, sep) {
-				return text, nil
-			} else {
-				return text + sep, nil
-			}
-		}
-		err = errors.New("no parent")
+	if err != nil {
+		return "", err
 	}
-	return "", err
+	if text == "" {
+		return "", errors.New("path==[empty]")
+	}
+	if !strings.Contains(text, sep) {
+		return text + sep, nil
+	}
+	return text, nil
 }
 
 func (inst *innerWindowsPlatform) Roots() []string {

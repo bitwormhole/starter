@@ -96,6 +96,17 @@ func (inst *innerFileSystem) GetPath(path string) Path {
 	}
 }
 
+func (inst *innerFileSystem) Resolve(path string) (Path, error) {
+	path, err := inst.core.platform.normalizePath(path)
+	if err != nil {
+		return nil, err
+	}
+	return &innerPath{
+		core: inst.core,
+		path: path,
+	}, nil
+}
+
 func (inst *innerFileSystem) Roots() []Path {
 	roots := inst.core.platform.Roots()
 	list := make([]Path, len(roots))
@@ -164,8 +175,11 @@ func (inst *innerPath) Path() string {
 }
 
 func (inst *innerPath) Parent() Path {
-	parent := inst.FileSystem().GetPath(inst.path + "/..")
-	return parent
+	parent, err := inst.FileSystem().Resolve(inst.path + "/..")
+	if err == nil {
+		return parent
+	}
+	return nil
 }
 
 func (inst *innerPath) URI() lang.URI {

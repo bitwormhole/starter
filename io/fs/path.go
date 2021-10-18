@@ -9,8 +9,10 @@ import (
 // FileSystem  代表一个抽象的文件系统
 type FileSystem interface {
 	Roots() []Path
+	Resolve(path string) (Path, error)
 	GetPath(path string) Path
 	GetPathByURI(uri lang.URI) (Path, error)
+
 	Separator() string
 	SeparatorChar() rune
 	PathSeparator() string
