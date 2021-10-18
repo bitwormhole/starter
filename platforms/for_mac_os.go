@@ -5,15 +5,15 @@ import (
 	"runtime"
 )
 
-type osxPlatformFactory struct {
+type pFactoryOSX struct {
 	arch string
 }
 
-func (inst *osxPlatformFactory) _Impl() platformFactory {
+func (inst *pFactoryOSX) _Impl() platformFactory {
 	return inst
 }
 
-func (inst *osxPlatformFactory) Create() Platform {
+func (inst *pFactoryOSX) Create() Platform {
 	p := &platformImpl{}
 	p.arch = runtime.GOARCH
 	p.osName = MacOS

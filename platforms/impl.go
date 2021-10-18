@@ -53,11 +53,11 @@ func initCurrent() Platform {
 		break
 
 	case "linux":
-		factory = &linuxPlatformFactory{}
+		factory = &pFactoryLinux{}
 		break
 
 	case "darwin":
-		factory = &osxPlatformFactory{}
+		factory = &pFactoryOSX{}
 		break
 
 	case "freebsd":

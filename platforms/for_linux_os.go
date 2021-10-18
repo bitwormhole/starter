@@ -5,15 +5,15 @@ import (
 	"runtime"
 )
 
-type linuxPlatformFactory struct {
+type pFactoryLinux struct {
 	arch string
 }
 
-func (inst *linuxPlatformFactory) _Impl() platformFactory {
+func (inst *pFactoryLinux) _Impl() platformFactory {
 	return inst
 }
 
-func (inst *linuxPlatformFactory) Create() Platform {
+func (inst *pFactoryLinux) Create() Platform {
 	p := &platformImpl{}
 	p.arch = runtime.GOARCH
 	p.osName = Linux
