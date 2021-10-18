@@ -37,7 +37,7 @@ func TestGetParent2(t *testing.T) {
 
 	if fs.SeparatorChar() == '/' {
 		// for posix
-		path = fs.GetPath("/a/b/c/x/y/z")
+		path = fs.GetPath("/a////b/./c/x/    /y/z")
 	}
 
 	p := path
