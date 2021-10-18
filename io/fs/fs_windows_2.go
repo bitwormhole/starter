@@ -15,6 +15,26 @@ func (inst *innerWindowsPlatform) isRootExists(path string) bool {
 	return err == nil || os.IsExist(err)
 }
 
+func (inst *innerWindowsPlatform) isAbsolute(path string) bool {
+
+	const headLen = 3
+	if len(path) < headLen {
+		return false
+	}
+	head := path[0:headLen]
+	array := []byte(head)
+
+	c0 := array[0]
+	c1 := array[1]
+	c2 := array[2]
+
+	ok0 := (('a' <= c0 && c0 <= 'z') || ('A' <= c0 && c0 <= 'Z'))
+	ok1 := c1 == ':'
+	ok2 := (c2 == '\\') || (c2 == '/')
+
+	return ok0 && ok1 && ok2
+}
+
 func (inst *innerWindowsPlatform) normalizePath(path string) (string, error) {
 	sep := string(inst.SeparatorChar())
 	pb := &util.PathBuilder{}

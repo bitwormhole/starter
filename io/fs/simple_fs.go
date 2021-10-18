@@ -6,9 +6,9 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/bitwormhole/starter/lang"
+	"github.com/bitwormhole/starter/platforms"
 	"github.com/bitwormhole/starter/util"
 )
 
@@ -17,6 +17,7 @@ type apiPlatform interface {
 	PathSeparatorChar() rune
 	SeparatorChar() rune
 	normalizePath(path string) (string, error)
+	isAbsolute(path string) bool
 }
 
 type innerFSCore struct {
@@ -29,29 +30,18 @@ type innerFSCore struct {
 	pathSeparatorChar rune
 }
 
-type innerPath struct {
-	// impl Path
-	core *innerFSCore
-	path string
-}
-
-type innerFileSystem struct {
-	// impl FileSystem
-	core *innerFSCore
-}
-
 var innerFileSystemDefaultOptionsR *Options
 var innerFileSystemDefaultOptionsW *Options
 
-// impl innerFileSystem
+////////////////////////////////////////////////////////////////////////////////
 
 // Default 创建一个默认的 FileSystem 实例
 func Default() FileSystem {
 
-	sys := runtime.GOOS
+	pf := platforms.Current()
 	var platform apiPlatform
 
-	if sys == "windows" {
+	if pf.OS() == platforms.Windows {
 		platform = &innerWindowsPlatform{}
 	} else {
 		platform = &innerPosixPlatform{}
@@ -74,7 +64,21 @@ func Default() FileSystem {
 	return fs
 }
 
+////////////////////////////////////////////////////////////////////////////////
 // impl innerFileSystem
+
+type innerFileSystem struct {
+	// impl FileSystem
+	core *innerFSCore
+}
+
+func (inst *innerFileSystem) _Impl() FileSystem {
+	return inst
+}
+
+func (inst *innerFileSystem) IsAbsolute(path string) bool {
+	return inst.core.platform.isAbsolute(path)
+}
 
 func (inst *innerFileSystem) GetPathByURI(uri lang.URI) (Path, error) {
 	scheme := uri.Scheme()
@@ -164,7 +168,14 @@ func (inst *innerFileSystem) PathSeparatorChar() rune {
 	return inst.core.pathSeparatorChar
 }
 
+////////////////////////////////////////////////////////////////////////////////
 // impl innerPath
+
+type innerPath struct {
+	// impl Path
+	core *innerFSCore
+	path string
+}
 
 func (inst *innerPath) Name() string {
 	return filepath.Base(inst.path)

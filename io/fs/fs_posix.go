@@ -1,6 +1,8 @@
 package fs
 
 import (
+	"strings"
+
 	"github.com/bitwormhole/starter/util"
 )
 
@@ -10,6 +12,10 @@ func (inst *innerPosixPlatform) Roots() []string {
 	list := make([]string, 1)
 	list[0] = "/"
 	return list
+}
+
+func (inst *innerPosixPlatform) isAbsolute(path string) bool {
+	return strings.HasPrefix(path, "/")
 }
 
 func (inst *innerPosixPlatform) PathSeparatorChar() rune {

@@ -12,6 +12,7 @@ type FileSystem interface {
 	Resolve(path string) (Path, error)
 	GetPath(path string) Path
 	GetPathByURI(uri lang.URI) (Path, error)
+	IsAbsolute(path string) bool
 
 	Separator() string
 	SeparatorChar() rune
