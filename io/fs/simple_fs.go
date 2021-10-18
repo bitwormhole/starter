@@ -216,13 +216,13 @@ func (inst *innerPath) IsFile() bool {
 }
 
 func (inst *innerPath) Mkdir() error {
-	mode := os.ModeDir
-	return os.Mkdir(inst.path, mode)
+	opt := inst.FileSystem().DefaultWriteOptions()
+	return os.Mkdir(inst.path, opt.Mode)
 }
 
 func (inst *innerPath) Mkdirs() error {
-	mode := os.ModeDir
-	return os.MkdirAll(inst.path, mode)
+	opt := inst.FileSystem().DefaultWriteOptions()
+	return os.MkdirAll(inst.path, opt.Mode)
 }
 
 func (inst *innerPath) Delete() error {

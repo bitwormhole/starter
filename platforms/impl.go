@@ -49,7 +49,7 @@ func initCurrent() Platform {
 	switch osName {
 
 	case "windows":
-		factory = &windowsPlatformFactory{}
+		factory = &pFactoryWindows{}
 		break
 
 	case "linux":

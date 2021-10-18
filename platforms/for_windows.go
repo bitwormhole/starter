@@ -5,15 +5,15 @@ import (
 	"runtime"
 )
 
-type windowsPlatformFactory struct {
+type pFactoryWindows struct {
 	arch string
 }
 
-func (inst *windowsPlatformFactory) _Impl() platformFactory {
+func (inst *pFactoryWindows) _Impl() platformFactory {
 	return inst
 }
 
-func (inst *windowsPlatformFactory) Create() Platform {
+func (inst *pFactoryWindows) Create() Platform {
 
 	p := &platformImpl{}
 	p.arch = runtime.GOARCH
