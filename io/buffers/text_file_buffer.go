@@ -1,4 +1,4 @@
-package buffer
+package buffers
 
 import (
 	"github.com/bitwormhole/starter/io/fs"
@@ -7,21 +7,22 @@ import (
 
 // TextFileBuffer 是一个简单的文本文件读写缓冲区
 type TextFileBuffer struct {
-	file   fs.Path
-	cacheR *textFileBufferCache
+	file  fs.Path
+	cache *textFileBufferCache
 }
 
 // Init 初始化缓冲区
 func (inst *TextFileBuffer) Init(file fs.Path) {
 	inst.file = file
+	inst.cache = nil
 }
 
 // GetText 获取文本
 func (inst *TextFileBuffer) GetText(reload bool) string {
 	if reload {
-		inst.cacheR = nil
+		inst.cache = nil
 	}
-	c := inst.getCacheR()
+	c := inst.getCache()
 	return c.text
 }
 
@@ -31,26 +32,21 @@ func (inst *TextFileBuffer) SetText(text string, force bool) {
 	file := inst.file
 
 	if !force {
-		if file.Exists() {
-			older := inst.getCacheR()
-			if text == older.text {
-				return
-			}
+		cache := inst.getCache()
+		if text == cache.text && cache.exists {
+			return
 		}
 	}
 
-	newer := &textFileBufferCache{}
-	newer.init(file)
-	newer.text = text
-	err := newer.save()
+	err := file.GetIO().WriteText(text, nil, true)
 	if err != nil {
 		vlog.Warn(err)
 	}
-	inst.cacheR = nil
+	inst.cache = nil
 }
 
-func (inst *TextFileBuffer) getCacheR() *textFileBufferCache {
-	c := inst.cacheR
+func (inst *TextFileBuffer) getCache() *textFileBufferCache {
+	c := inst.cache
 	if c != nil {
 		if c.isUpToDate() {
 			return c
@@ -60,20 +56,21 @@ func (inst *TextFileBuffer) getCacheR() *textFileBufferCache {
 	c = &textFileBufferCache{}
 	c.init(file)
 	err := c.load()
-	if err != nil && file.Exists() {
+	if err != nil && c.exists {
 		vlog.Warn(err)
 	}
-	inst.cacheR = c
+	inst.cache = c
 	return c
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 type textFileBufferCache struct {
-	file fs.Path
-	time int64
-	size int64
-	text string
+	file   fs.Path
+	time   int64
+	size   int64
+	text   string
+	exists bool
 }
 
 func (inst *textFileBufferCache) init(file fs.Path) {
@@ -83,6 +80,7 @@ func (inst *textFileBufferCache) init(file fs.Path) {
 func (inst *textFileBufferCache) load() error {
 	text, err := inst.file.GetIO().ReadText(nil)
 	if err != nil {
+		inst.exists = false
 		return nil
 	}
 	inst.text = text
@@ -90,23 +88,18 @@ func (inst *textFileBufferCache) load() error {
 	return nil
 }
 
-func (inst *textFileBufferCache) save() error {
-	text := inst.text
-	err := inst.file.GetIO().WriteText(text, nil, true)
-	if err == nil {
-		inst.update()
-	}
-	return err
-}
-
 func (inst *textFileBufferCache) update() {
 	file := inst.file
 	inst.size = file.Size()
 	inst.time = file.LastModTime()
+	inst.exists = file.Exists()
 }
 
 func (inst *textFileBufferCache) isUpToDate() bool {
 	file := inst.file
+	if !file.Exists() {
+		return false
+	}
 	size1 := inst.size
 	time1 := inst.time
 	size2 := file.Size()
