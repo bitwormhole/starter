@@ -18,6 +18,16 @@ func (inst *SimpleProperties) getTable() map[string]string {
 	return t
 }
 
+// Getter 取 Getter
+func (inst *SimpleProperties) Getter() PropertyGetter {
+	return &simplePropertyGetter{props: inst}
+}
+
+// Setter 取 Setter
+func (inst *SimpleProperties) Setter() PropertySetter {
+	return &simplePropertySetter{props: inst}
+}
+
 // GetPropertyRequired 在集合中取指定的值，如果没有则返回error
 func (inst *SimpleProperties) GetPropertyRequired(name string) (string, error) {
 	t := inst.getTable()
