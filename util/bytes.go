@@ -2,7 +2,7 @@ package util
 
 import "strings"
 
-func _stringifyBytes_digit(n int, builder *strings.Builder) {
+func stringifyBytesDigit(n int, builder *strings.Builder) {
 	n = n & 0x0f
 	if (0 <= n) && (n <= 9) {
 		builder.WriteRune('0' + rune(n))
@@ -11,15 +11,16 @@ func _stringifyBytes_digit(n int, builder *strings.Builder) {
 	}
 }
 
+// StringifyBytes 把字节数组格式化为字符串（charset=0~9+abcdef）
 func StringifyBytes(data []byte) string {
 	if data == nil {
 		return "[nil]"
 	}
-	builder := &strings.Builder{}
+	builder := strings.Builder{}
 	for index := range data {
 		b := int(data[index])
-		_stringifyBytes_digit(b>>4, builder)
-		_stringifyBytes_digit(b, builder)
+		stringifyBytesDigit(b>>4, &builder)
+		stringifyBytesDigit(b, &builder)
 	}
 	return builder.String()
 }
