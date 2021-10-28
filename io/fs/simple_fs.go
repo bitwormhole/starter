@@ -240,6 +240,16 @@ func (inst *innerPath) Delete() error {
 	return os.Remove(inst.path)
 }
 
+func (inst *innerPath) SetMode(mode os.FileMode) error {
+	return os.Chmod(inst.path, mode)
+}
+
+func (inst *innerPath) SetLastModTime(t int64) error {
+	name := inst.path
+	time1 := util.Int64ToTime(t)
+	return os.Chtimes(name, time1, time1)
+}
+
 func (inst *innerPath) CopyTo(target Path) error {
 
 	src, err := os.Open(inst.path)
@@ -336,8 +346,9 @@ func (inst *innerPath) GetMeta() FileMeta {
 	return mode
 }
 
-func (inst *innerPath) SetMeta(mode FileMeta) {
+func (inst *innerPath) SetMeta(mode FileMeta) error {
 	// TODO
+	return errors.New("no impl")
 }
 
 func (inst *innerPath) CreateFile(opt *Options) error {

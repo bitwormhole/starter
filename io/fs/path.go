@@ -2,6 +2,7 @@ package fs
 
 import (
 	"io"
+	"os"
 
 	"github.com/bitwormhole/starter/lang"
 )
@@ -42,8 +43,10 @@ type Path interface {
 	IsSymlink() bool
 	LastModTime() int64 // ms from unix time(1970-01-01 00:00:00)
 	GetMeta() FileMeta
-	SetMeta(meta FileMeta)
 
+	SetMeta(meta FileMeta) error
+	SetMode(mode os.FileMode) error
+	SetLastModTime(t int64) error // ms from unix time(1970-01-01 00:00:00)
 	Delete() error
 
 	// for file
@@ -91,6 +94,7 @@ type FileIO interface {
 // FileMeta  表示对一个具体文件的 posix liked mode
 type FileMeta interface {
 	LastModTime() int64
+	Mode() os.FileMode
 	Size() int64
 
 	IsFile() bool

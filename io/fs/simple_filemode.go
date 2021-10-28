@@ -27,6 +27,10 @@ func (inst *innerFileMeta) Exists() bool {
 	return inst.exists
 }
 
+func (inst *innerFileMeta) Mode() os.FileMode {
+	return inst.mode
+}
+
 func (inst *innerFileMeta) LastModTime() int64 {
 	info := inst.info
 	if info == nil {
