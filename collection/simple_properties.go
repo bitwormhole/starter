@@ -89,6 +89,17 @@ func (inst *SimpleProperties) Import(src map[string]string) {
 	}
 }
 
+// CreateProperties 创建一个简单的属性表
 func CreateProperties() Properties {
 	return &SimpleProperties{}
+}
+
+// CreatePropertyGetter 创建一个简单的属性表 Getter
+func CreatePropertyGetter(p Properties) PropertyGetter {
+	return &simplePropertyGetter{props: p}
+}
+
+// CreatePropertySetter 创建一个简单的属性表 Setter
+func CreatePropertySetter(p Properties) PropertySetter {
+	return &simplePropertySetter{props: p}
 }

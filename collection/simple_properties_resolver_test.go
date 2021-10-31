@@ -26,4 +26,5 @@ func TestResolvePropertyVar(t *testing.T) {
 	for k, v := range table {
 		t.Log("property:    ", k, " = ", v)
 	}
+
 }
