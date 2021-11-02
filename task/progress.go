@@ -9,6 +9,8 @@ type Progress struct {
 	Value     int64  // 当前值
 	ValueMin  int64  // 最小值
 	ValueMax  int64  // 最大值
+	TimeBegin int64  // 开始时间
+	TimeEnd   int64  // 结束时间
 	Done      bool   // 是否已完成
 	Cancelled bool   // 是否已取消
 }
