@@ -1,6 +1,9 @@
 package collection
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 type SimpleEnvironment struct {
 	table map[string]string
@@ -15,6 +18,7 @@ func (inst *SimpleEnvironment) GetEnv(name string) (string, error) {
 }
 
 func (inst *SimpleEnvironment) SetEnv(name string, value string) {
+	name = strings.ToUpper(name)
 	inst.table[name] = value
 }
 
@@ -33,9 +37,8 @@ func (inst *SimpleEnvironment) Import(src map[string]string) {
 	if src == nil {
 		return
 	}
-	dst := inst.table
-	for key := range src {
-		dst[key] = src[key]
+	for key, value := range src {
+		inst.SetEnv(key, value)
 	}
 }
 
