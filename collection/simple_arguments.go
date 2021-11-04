@@ -2,153 +2,168 @@ package collection
 
 import "strings"
 
+// CreateArguments 创建一个空的参数表
 func CreateArguments() Arguments {
-	return &SimpleArguments{}
+	pNew := &innerSimpleArguments{}
+	pNew.init(nil)
+	return pNew
+}
+
+// InitArguments 用给定的数据初始化一个新的参数表
+func InitArguments(args []string) Arguments {
+	pNew := &innerSimpleArguments{}
+	pNew.init(args)
+	return pNew
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// struct SimpleArguments
 
-type SimpleArguments struct {
-	args     []string
-	mappings map[string]*simpleArgumentMapping
+// struct innerSimpleArguments
+type innerSimpleArguments struct {
+	args []string
+	size int
 }
 
-func (inst *SimpleArguments) getMappings() map[string]*simpleArgumentMapping {
-	list := inst.args
-	table := inst.mappings
-	if list == nil {
-		list = make([]string, 0)
-		inst.args = list
-	}
-	if table == nil {
-		table = make(map[string]*simpleArgumentMapping)
-		for index := range list {
-			item := list[index]
-			key := strings.TrimSpace(item)
-			mapping := &simpleArgumentMapping{}
-			mapping.ref = list[index:]
-			table[key] = mapping
-		}
-		inst.mappings = table
-	}
-	return table
+func (inst *innerSimpleArguments) init(args []string) Arguments {
+	inst.args = inst.makeCopy(args)
+	inst.size = len(args)
+	return inst
 }
 
-func (inst *SimpleArguments) copyArray(src []string) []string {
+func (inst *innerSimpleArguments) Length() int {
+	return inst.size
+}
+
+func (inst *innerSimpleArguments) Get(index int) string {
+	return inst.args[index]
+}
+
+func (inst *innerSimpleArguments) NewReader() ArgumentReader {
+	args := inst.makeCopy(inst.args)
+	reader := &innerArgumentReader{}
+	return reader.init(args)
+}
+
+func (inst *innerSimpleArguments) Import(args []string) {
+	inst.args = inst.makeCopy(args)
+}
+
+func (inst *innerSimpleArguments) Export() []string {
+	return inst.makeCopy(inst.args)
+}
+
+func (inst *innerSimpleArguments) makeCopy(src []string) []string {
 	if src == nil {
-		return []string{}
+		src = []string{}
 	}
-	size := len(src)
-	dst := make([]string, size)
-	for index := range src {
-		dst[index] = src[index]
+	dst := make([]string, len(src))
+	copy(dst, src)
+	return dst
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// struct innerSimpleArguments
+type innerArgumentReader struct {
+	args    []string
+	flags   map[string]ArgumentFlag
+	flagNON ArgumentFlag
+	ptr     int
+	size    int
+}
+
+func (inst *innerArgumentReader) init(args []string) ArgumentReader {
+	flags := make(map[string]ArgumentFlag)
+	for index, element := range args {
+		if strings.HasPrefix(element, "-") {
+			flag := &innerArgumentFlag{}
+			flag.index = index
+			flag.name = element
+			flag.reader = inst
+			flags[element] = flag
+			args[index] = ""
+		}
+	}
+	inst.flagNON = &innerArgumentFlag{}
+	inst.flags = flags
+	inst.args = args
+	inst.ptr = 0
+	inst.size = len(args)
+	return inst
+}
+
+func (inst *innerArgumentReader) Flags() []string {
+	src := inst.flags
+	dst := make([]string, 0)
+	for name := range src {
+		dst = append(dst, name)
 	}
 	return dst
 }
 
-func (inst *SimpleArguments) Export() []string {
-	return inst.copyArray(inst.args)
-}
-
-func (inst *SimpleArguments) Import(args []string) {
-	inst.args = inst.copyArray(args)
-	inst.mappings = nil
-}
-
-func (inst *SimpleArguments) GetReader(flag string) (ArgumentReader, bool) {
-	mappings := inst.getMappings()
-	reader := &simpleArgumentReader{}
-	mapping := mappings[flag]
-	if mapping == nil {
-		if flag == "" {
-			mapping = &simpleArgumentMapping{}
-			mapping.ref = inst.args
-		} else {
-			return reader, false
-		}
+func (inst *innerArgumentReader) GetFlag(name string) ArgumentFlag {
+	flag := inst.flags[name]
+	if flag == nil {
+		flag = inst.flagNON
 	}
-	reader.init(mapping)
-	return reader, true
+	return flag
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// struct simpleArgumentMapping
-
-type simpleArgumentMapping struct {
-	ref []string
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// struct simpleArgumentReader
-
-type simpleArgumentReader struct {
-	ending string
-	items  []string
-	ptr    int
-	size   int
-	eof    bool
-}
-
-func (inst *simpleArgumentReader) init(mapping *simpleArgumentMapping) {
-
-	if mapping == nil {
-		return
-	}
-	items := mapping.ref
-	if items == nil {
-		return
-	}
-	inst.items = items
-	inst.ptr = 0
-	inst.ending = "-"
-	inst.eof = false
-	inst.size = len(items)
-}
-
-func (inst *simpleArgumentReader) SetEnding(ending string) {
-	inst.ending = ending
-}
-
-func (inst *simpleArgumentReader) Ending() string {
-	return inst.ending
-}
-
-func (inst *simpleArgumentReader) readNextItem() (string, bool) {
-	if inst.eof {
-		return "", false
-	}
-	items := inst.items
-	ptr := inst.ptr
+func (inst *innerArgumentReader) PickNext() (string, bool) {
+	args := inst.args
+	i := inst.ptr
 	size := inst.size
-	for {
-		if 0 <= ptr && ptr < size {
-			text := items[ptr]
-			ptr++
-			if text == "" {
-				continue
-			}
-			inst.ptr = ptr
-			return text, true
-		} else {
-			inst.eof = true
-			return "", false
+	text := ""
+	ok := false
+	for ; i < size; i++ {
+		el := args[i]
+		if el != "" {
+			text = el
+			ok = true
+			i++
+			break
 		}
 	}
+	inst.ptr = i
+	return text, ok
 }
 
-func (inst *simpleArgumentReader) Read() (string, bool) {
-	index := inst.ptr
-	prefix := inst.ending
-	item, ok := inst.readNextItem()
-	if !ok {
+////////////////////////////////////////////////////////////////////////////////
+
+// struct innerSimpleArguments
+type innerArgumentFlag struct {
+	reader *innerArgumentReader
+	name   string
+	index  int
+}
+
+func (inst *innerArgumentFlag) _Impl() ArgumentFlag {
+	return inst
+}
+
+func (inst *innerArgumentFlag) GetName() string {
+	return inst.name
+}
+
+func (inst *innerArgumentFlag) Exists() bool {
+	return inst.reader != nil
+}
+
+func (inst *innerArgumentFlag) Pick(offset int) (string, bool) {
+	reader := inst.reader
+	if reader == nil {
 		return "", false
 	}
-	if index > 0 {
-		if strings.HasPrefix(item, prefix) {
-			inst.eof = true
-			return "", false
+	args := reader.args
+	index := inst.index + offset
+	if 0 <= index && index < reader.size {
+		text := args[index]
+		if text != "" {
+			args[index] = ""
+			return text, true
 		}
 	}
-	return item, true
+	return "", false
 }
+
+////////////////////////////////////////////////////////////////////////////////
