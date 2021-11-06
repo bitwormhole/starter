@@ -19,6 +19,7 @@ type Initializer interface {
 	UseResources(res collection.Resources) Initializer
 	UseProperties(res collection.Properties) Initializer
 	Use(module Module) Initializer
+	UseMain(module Module) Initializer
 	UsePanic() Initializer
 }
 

@@ -10,7 +10,8 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 
 type moduleManager struct {
-	table map[string]*moduleHolder
+	table          map[string]*moduleHolder
+	mainModuleName string
 	// list       []*moduleHolder
 	depthLimit int
 }
@@ -84,6 +85,10 @@ func (inst *moduleManager) listAll() []application.Module {
 	sorter := &moduleHolderSorter{}
 	sorter.init(inst.table)
 	return sorter.sort()
+}
+
+func (inst *moduleManager) setMainModule(mm application.Module) {
+	inst.mainModuleName = mm.GetName()
 }
 
 ////////////////////////////////////////////////////////////////////////////////

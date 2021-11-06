@@ -71,6 +71,21 @@ func (inst *innerInitializer) Use(module application.Module) application.Initial
 	return inst
 }
 
+func (inst *innerInitializer) UseMain(module application.Module) application.Initializer {
+
+	const key = "main.module"
+
+	props := collection.CreateProperties()
+	props.SetProperty(key, module.GetName())
+
+	inst.modules.use(module, true)
+	inst.modules.setMainModule(module)
+	inst.cfgBuilder.AddProperties(props)
+	inst.SetAttribute(key, module)
+
+	return inst
+}
+
 func (inst *innerInitializer) UseProperties(p collection.Properties) application.Initializer {
 	inst.cfgBuilder.AddProperties(p)
 	return inst

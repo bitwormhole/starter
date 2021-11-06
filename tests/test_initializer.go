@@ -58,6 +58,10 @@ func (inst *innerInitializerWrapper) Use(module application.Module) application.
 	return inst.inner.Use(module)
 }
 
+func (inst *innerInitializerWrapper) UseMain(module application.Module) application.Initializer {
+	return inst.inner.UseMain(module)
+}
+
 func (inst *innerInitializerWrapper) UsePanic() application.Initializer {
 	return inst.inner.UsePanic()
 }
