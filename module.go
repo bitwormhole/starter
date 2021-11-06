@@ -2,7 +2,7 @@ package starter
 
 import (
 	"github.com/bitwormhole/starter/application"
-	etcstarter "github.com/bitwormhole/starter/etc/starter"
+	"github.com/bitwormhole/starter/gen"
 	srcmain "github.com/bitwormhole/starter/src/main"
 )
 
@@ -19,8 +19,8 @@ func Module() application.Module {
 	builder.Name(myName).Version(myVersion).Revision(myRevision)
 	builder.Resources(srcmain.ExportResources())
 	builder.Dependency(nil)
-
 	mod := builder.Create()
-	builder.OnMount(func(cb application.ConfigBuilder) error { return etcstarter.ExportConfig(cb, mod) })
+
+	builder.OnMount(func(cb application.ConfigBuilder) error { return gen.ExportConfigForStarter(cb, mod) })
 	return builder.Create()
 }

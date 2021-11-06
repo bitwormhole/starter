@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"runtime/debug"
 	"strconv"
+	"strings"
 
 	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/application/bootstrap"
@@ -73,10 +74,19 @@ func (inst *innerInitializer) Use(module application.Module) application.Initial
 
 func (inst *innerInitializer) UseMain(module application.Module) application.Initializer {
 
-	const key = "main.module"
+	const key = "module.main"
+
+	simpleName := module.GetName()
+	i := strings.LastIndex(simpleName, "/")
+	if i > 0 {
+		simpleName = simpleName[i+1:]
+	}
 
 	props := collection.CreateProperties()
-	props.SetProperty(key, module.GetName())
+	props.SetProperty(key+".name", module.GetName())
+	props.SetProperty(key+".version", module.GetVersion())
+	props.SetProperty(key+".revision", strconv.Itoa(module.GetRevision()))
+	props.SetProperty("application.simple-name", simpleName)
 
 	inst.modules.use(module, true)
 	inst.modules.setMainModule(module)

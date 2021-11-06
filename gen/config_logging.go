@@ -1,6 +1,7 @@
-package starter
+package gen
 
 import (
+	application "github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/markup"
 	"github.com/bitwormhole/starter/vlog"
 	"github.com/bitwormhole/starter/vlog/std"
@@ -48,6 +49,8 @@ type theVlogDistributor struct {
 	Channels []vlog.Channel `inject:".vlog-std-sub-channel"`
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 type theVlogConsoleChannel struct {
 	markup.Component
 	instance *std.LogChannel `id:"vlog-std-console-channel" class:"vlog-std-channel vlog-std-sub-channel"`
@@ -65,3 +68,31 @@ type theVlogConsoleWriter struct {
 	markup.Component
 	instance *std.ConsoleWriter `id:"vlog-std-console-writer"`
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+type theVlogFileChannel struct {
+	markup.Component
+	instance *std.LogChannel `id:"vlog-std-file-channel" class:"vlog-std-channel vlog-std-sub-channel"`
+
+	Context   std.Context    `inject:"#vlog-std-context"`
+	Name      string         `inject:"vlog-file"`
+	Enable    bool           `inject:"${vlog.file.enable}"`
+	Filters   []vlog.Filter  `x-inject:"*"`
+	Writer    vlog.Writer    `inject:"#vlog-std-file-writer"`
+	Level     string         `inject:"${vlog.file.level}"`
+	Formatter vlog.Formatter `x-inject:"*"`
+}
+
+type theVlogFileWriter struct {
+	markup.Component `id:"vlog-std-file-writer"  initMethod:"Open" destroyMethod:"Close" `
+
+	instance *std.FileWriter
+
+	Enable  bool                `inject:"${vlog.file.enable}"`
+	Path1   string              `inject:"${vlog.file.path1}"`
+	Path2   string              `inject:"${vlog.file.path2}"`
+	Context application.Context `inject:"context"`
+}
+
+////////////////////////////////////////////////////////////////////////////////

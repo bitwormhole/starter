@@ -23,6 +23,10 @@ func (inst *SimpleFormatter) _Impl() Formatter {
 	return inst
 }
 
+func (inst *SimpleFormatter) enableStyle() bool {
+	return false
+}
+
 func (inst *SimpleFormatter) Format(r *Record) string {
 
 	tt := time.Unix(r.Timestamp/1000, 0)
@@ -36,7 +40,7 @@ func (inst *SimpleFormatter) Format(r *Record) string {
 	builder.WriteString("[")
 	builder.WriteString(r.Level.String())
 	builder.WriteString("]")
-	builder.WriteString(FormatStyleNormal)
+	builder.WriteString(inst.getStyle(nil))
 	builder.WriteString(" ")
 
 	builder.WriteString(fmt.Sprint(args...))
@@ -44,6 +48,15 @@ func (inst *SimpleFormatter) Format(r *Record) string {
 }
 
 func (inst *SimpleFormatter) getStyle(r *Record) string {
+
+	if !inst.enableStyle() {
+		return ""
+	}
+
+	if r == nil {
+		return FormatStyleNormal
+	}
+
 	switch r.Level {
 	case INFO:
 		return FormatStyleInfo
@@ -62,6 +75,12 @@ func (inst *SimpleFormatter) getStyle(r *Record) string {
 
 	case FATAL:
 		return FormatStyleFatal
+
+	case NONE:
+		return ""
+
+	default:
+		break
 	}
 	return FormatStyleNormal
 }
