@@ -28,6 +28,7 @@ type appContext struct {
 	errorHandler lang.ErrorHandler
 	pool         lang.ReleasePool
 	components   application.Components
+	closed       bool
 
 	arguments   collection.Arguments
 	attributes  collection.Attributes
@@ -160,6 +161,14 @@ func (inst *appContext) NewChild() application.Context {
 	child.components.GroupManager().Reload()
 
 	return child
+}
+
+func (inst *appContext) Close() error {
+	if inst.closed {
+		return nil
+	}
+	inst.closed = true
+	return inst.pool.Release()
 }
 
 func (inst *appContext) isComReady(ci application.ComponentInstance) bool {

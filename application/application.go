@@ -1,10 +1,18 @@
 package application
 
-import "os"
+import (
+	"errors"
+	"os"
+)
 
 // Run 函数启动一个应用实例，返回应用上下文
 func Run(config Configuration, args []string) (Context, error) {
 	return config.GetLoader().Load(config, args)
+}
+
+// Start 函数用于执行应用的 Loop 前处理
+func Start(context Context) error {
+	return errors.New("no impl")
 }
 
 // Loop 函数用于执行应用的主循环
@@ -14,6 +22,11 @@ func Loop(context Context) error {
 		return nil
 	}
 	return looper.Loop()
+}
+
+// Stop 函数用于执行应用的 Loop 后处理
+func Stop(context Context) error {
+	return errors.New("no impl")
 }
 
 // Exit 函数用于退出应用

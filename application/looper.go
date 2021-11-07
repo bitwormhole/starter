@@ -6,10 +6,28 @@ import (
 	"github.com/bitwormhole/starter/lang"
 )
 
-const LooperClassName = "looper"
+// 定义app生命周期组件的类名称
+const (
+	StarterClassName = "starter"
+	LooperClassName  = "looper"
+	StopperClassName = "stopper"
+)
 
+// app 生命周期： Init -> Start -> Loop ->  Stop -> Destroy!
+
+// Starter 是 app 的启动器
+type Starter interface {
+	Start() error
+}
+
+// Looper 是 app 的循环器
 type Looper interface {
 	Loop() error
+}
+
+// Stopper 是 app 的制动器
+type Stopper interface {
+	Stop() error
 }
 
 ////////////////////////////////////////////////////////////////////////////////

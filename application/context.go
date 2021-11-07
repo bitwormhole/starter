@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"io"
 
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/lang"
@@ -42,6 +43,7 @@ type Context interface {
 	context.Context
 	ContextCollections
 	ContextInfo
+	io.Closer
 
 	// helper
 	SetErrorHandler(h lang.ErrorHandler)
