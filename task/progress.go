@@ -1,5 +1,15 @@
 package task
 
+import (
+	"context"
+	"errors"
+	"fmt"
+	"strings"
+
+	"github.com/bitwormhole/starter/contexts"
+	"github.com/bitwormhole/starter/vlog"
+)
+
 // Progress 进度对象
 type Progress struct {
 	TaskID    string // 任务ID
@@ -13,6 +23,8 @@ type Progress struct {
 	TimeEnd   int64  // 结束时间
 	Done      bool   // 是否已完成
 	Cancelled bool   // 是否已取消
+	State     State
+	Status    Status
 }
 
 // ProgressControlHandlerFn 进度控制处理函数
@@ -21,10 +33,133 @@ type ProgressControlHandlerFn func(reporter ProgressReporter) error
 // ProgressReporter 进度报告者（服务端接口）
 type ProgressReporter interface {
 	Report(p *Progress)
-	UpdateStatus(s Status)
-	UpdateState(s State)
+
+	// Update 更新状态 state|status
+	Update(p *Progress)
 
 	HandleCancel(f ProgressControlHandlerFn)
 	HandlePause(f ProgressControlHandlerFn)
 	HandleResume(f ProgressControlHandlerFn)
+}
+
+// ProgressReporterFactory 进度报告者工厂
+type ProgressReporterFactory interface {
+	Create() ProgressReporter
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// ProgressReporterHolder 报告者管理器
+type ProgressReporterHolder struct {
+	factory  ProgressReporterFactory
+	reporter ProgressReporter
+}
+
+// GetFactory 获取报告者工厂
+func (inst *ProgressReporterHolder) GetFactory() ProgressReporterFactory {
+	return inst.factory
+}
+
+// GetReporter 获取报告者
+func (inst *ProgressReporterHolder) GetReporter() (ProgressReporter, error) {
+	r := inst.reporter
+	if r == nil {
+		f := inst.factory
+		if f == nil {
+			return nil, errors.New("no reporter factory")
+		}
+		r = f.Create()
+		if r == nil {
+			return nil, errors.New("no reporter created")
+		}
+		inst.reporter = r
+	}
+	return r, nil
+}
+
+// SetFactory 设置报告者工厂
+func (inst *ProgressReporterHolder) SetFactory(f ProgressReporterFactory) {
+	if f != nil {
+		inst.factory = f
+	}
+}
+
+// SetReporter 设置报告者
+func (inst *ProgressReporterHolder) SetReporter(r ProgressReporter) {
+	inst.reporter = r
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+type DefaultProgressReporterFactory struct {
+}
+
+func (inst *DefaultProgressReporterFactory) Create() ProgressReporter {
+	return &DefaultProgressReporter{}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+type DefaultProgressReporter struct {
+}
+
+func (inst *DefaultProgressReporter) Report(p *Progress) {
+
+	builder := strings.Builder{}
+	builder.WriteString("progress.report")
+
+	builder.WriteString(fmt.Sprint(" name:", p.Name))
+	builder.WriteString(fmt.Sprint(" tid:", p.TaskID))
+	builder.WriteString(fmt.Sprint(" title:", p.Title))
+
+	builder.WriteString(fmt.Sprint(" unit:", p.Unit))
+	builder.WriteString(fmt.Sprint(" min:", p.ValueMin))
+	builder.WriteString(fmt.Sprint(" max:", p.ValueMax))
+	builder.WriteString(fmt.Sprint(" value:", p.Value))
+
+	vlog.Info(builder.String())
+}
+
+func (inst *DefaultProgressReporter) Update(p *Progress) {
+	vlog.Info("progress.update state:", p.State, " status:", p.Status)
+}
+
+func (inst *DefaultProgressReporter) HandleCancel(f ProgressControlHandlerFn) {
+
+}
+
+func (inst *DefaultProgressReporter) HandlePause(f ProgressControlHandlerFn) {
+
+}
+
+func (inst *DefaultProgressReporter) HandleResume(f ProgressControlHandlerFn) {
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// GetProgressReporterHolder 取报告者管理器
+func GetProgressReporterHolder(ctx context.Context) (*ProgressReporterHolder, error) {
+	const key = "github.com/bitwormhole/starter/task/ProgressReporterHolder#binding"
+	setter, err := contexts.GetContextSetter(ctx)
+	if err != nil {
+		return nil, err
+	}
+	o1 := setter.GetContext().Value(key)
+	o2, ok := o1.(*ProgressReporterHolder)
+	if ok {
+		return o2, nil
+	}
+	o2 = &ProgressReporterHolder{}
+	setter.SetValue(key, o2)
+	return o2, nil
+}
+
+// GetProgressReporter 取报告者
+func GetProgressReporter(ctx context.Context) (ProgressReporter, error) {
+	holder, err := GetProgressReporterHolder(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return holder.GetReporter()
 }
