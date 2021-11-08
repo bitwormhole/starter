@@ -12,19 +12,22 @@ import (
 
 // Progress 进度对象
 type Progress struct {
-	TaskID    string // 任务ID
-	Name      string // 项目名称(ID)
-	Title     string // 标题
-	Unit      string // 单位
-	Value     int64  // 当前值
-	ValueMin  int64  // 最小值
-	ValueMax  int64  // 最大值
-	TimeBegin int64  // 开始时间
-	TimeEnd   int64  // 结束时间
-	Done      bool   // 是否已完成
-	Cancelled bool   // 是否已取消
-	State     State
-	Status    Status
+	TaskID  string // 任务ID
+	Name    string // 项目名称(ID)
+	Title   string // 标题
+	Unit    string // 单位
+	Message string // 描述当前进度的消息
+
+	Value     int64 // 当前值
+	ValueMin  int64 // 最小值
+	ValueMax  int64 // 最大值
+	TimeBegin int64 // 开始时间
+	TimeEnd   int64 // 结束时间
+
+	// Done      bool // 是否已完成 (已废弃，用 State)
+	// Cancelled bool // 是否已取消（已废弃，用 Statue）
+	State  State  // 过程中的状态
+	Status Status // 最终状态
 }
 
 // ProgressControlHandlerFn 进度控制处理函数
