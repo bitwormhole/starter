@@ -1,5 +1,7 @@
 package task
 
+import "github.com/bitwormhole/starter/vlog"
+
 type fireEvent int
 
 const (
@@ -55,7 +57,10 @@ func (inst *callbackChainNode) tryFireThen() {
 func (inst *callbackChainNode) tryFireCatch() {
 
 	defer func() {
-		recover()
+		o := recover()
+		if o != nil {
+			vlog.Warn("recover: ", o)
+		}
 	}()
 
 	callback := inst.fnCatch
@@ -68,7 +73,10 @@ func (inst *callbackChainNode) tryFireCatch() {
 func (inst *callbackChainNode) tryFireFinally() {
 
 	defer func() {
-		recover()
+		o := recover()
+		if o != nil {
+			vlog.Warn("recover: ", o)
+		}
 	}()
 
 	callback := inst.fnFinally
@@ -180,7 +188,13 @@ func (inst *innerPromise) start(fn PromiseFn, executor Executor) {
 func (inst *innerPromise) Run() {
 
 	defer func() {
-		recover()
+		o := recover()
+		if o != nil {
+			vlog.Warn("recover: ", o)
+		}
+	}()
+
+	defer func() {
 		inst.handleFinally()
 	}()
 

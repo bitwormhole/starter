@@ -2,6 +2,7 @@ package task
 
 import (
 	"testing"
+	"time"
 
 	"github.com/bitwormhole/starter/io/fs"
 	"github.com/bitwormhole/starter/vlog"
@@ -23,11 +24,21 @@ func TestPromise(t *testing.T) {
 		}
 	})
 
+	done := false
+
 	p.Then(func(result interface{}) {
 		vlog.Info(result)
 	}).Catch(func(err error) {
 		vlog.Error(err)
 	}).Finally(func() {
 		vlog.Debug("done")
+		done = true
 	})
+
+	for {
+		time.Sleep(time.Second)
+		if done {
+			break
+		}
+	}
 }
