@@ -93,6 +93,23 @@ func (inst *DefineModule) Apply(cb ConfigBuilder) error {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// ModuleProvider 以简单的方式提供一个模块
+type ModuleProvider interface {
+	GetModule() Module
+}
+
+// ModuleFactory 提供简单的，或者定制的模块
+type ModuleFactory interface {
+
+	// 以简单的方式获取一个模块
+	ModuleProvider
+
+	// 按照参数定制模块
+	CreateModule(params *DefineModule) Module
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 // ModuleBuilder 用于创建Module对象
 type ModuleBuilder struct {
 	name     string
