@@ -1,6 +1,7 @@
 package loader2
 
 import (
+	"errors"
 	"os"
 	"strings"
 
@@ -62,6 +63,12 @@ func (inst *contextLoading) load() (application.Context, error) {
 
 	vlog.Debug("load properties ...")
 	err = inst.loadProperties()
+	if err != nil {
+		return nil, err
+	}
+
+	vlog.Debug("load attributes ...")
+	err = inst.loadAttributes()
 	if err != nil {
 		return nil, err
 	}
@@ -144,6 +151,17 @@ func (inst *contextLoading) loadEnvironment() error {
 func (inst *contextLoading) loadProperties() error {
 	loader := &propertiesLoader{}
 	return loader.load(inst)
+}
+
+func (inst *contextLoading) loadAttributes() error {
+	src := inst.config.GetAttributes()
+	dst := inst.context.GetAttributes()
+	if src == nil || dst == nil {
+		return errors.New("atts==nil")
+	}
+	all := src.Export(nil)
+	dst.Import(all)
+	return nil
 }
 
 func (inst *contextLoading) loadComponents() error {
