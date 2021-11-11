@@ -10,8 +10,8 @@ import (
 
 const (
 	myName     = "github.com/bitwormhole/starter"
-	myVersion  = "v0.0.80"
-	myRevision = 80
+	myVersion  = "v0.0.81"
+	myRevision = 81
 )
 
 //go:embed src/main/resources
