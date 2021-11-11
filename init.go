@@ -86,7 +86,8 @@ func (inst *innerInitializer) UseMain(module application.Module) application.Ini
 	props.SetProperty(key+".name", module.GetName())
 	props.SetProperty(key+".version", module.GetVersion())
 	props.SetProperty(key+".revision", strconv.Itoa(module.GetRevision()))
-	props.SetProperty("application.simple-name", simpleName)
+	props.SetProperty("application.name", simpleName)
+	props.SetProperty("application.fullname", module.GetName())
 
 	inst.modules.use(module, true)
 	inst.modules.setMainModule(module)

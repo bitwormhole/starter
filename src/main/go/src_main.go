@@ -8,6 +8,6 @@ import (
 func main() {
 	vlog.Debug("src/main/go")
 	i := starter.InitApp()
-	i.Use(starter.Module())
+	i.UseMain(starter.Module())
 	i.Run()
 }

@@ -12,7 +12,8 @@ func main() {
 	vlog.Info("src/debug/go")
 
 	i := starter.InitApp()
-	i.Use(starter.Module()).Use(innerModule())
+	i.Use(starter.Module())
+	i.UseMain(innerModule())
 
 	rt, err := i.RunEx()
 	if err != nil {
