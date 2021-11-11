@@ -64,7 +64,11 @@ func (inst *configuration) GetEnvironment() collection.Environment {
 }
 
 func (inst *configuration) GetDefaultProperties() collection.Properties {
-	return inst.cb.properties
+	return inst.cb.propertiesDefault
+}
+
+func (inst *configuration) GetFinalProperties() collection.Properties {
+	return inst.cb.propertiesFinal
 }
 
 func (inst *configuration) IsEnableLoadPropertiesFromArguments() bool {

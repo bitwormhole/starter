@@ -91,7 +91,7 @@ func (inst *innerInitializer) UseMain(module application.Module) application.Ini
 
 	inst.modules.use(module, true)
 	inst.modules.setMainModule(module)
-	inst.cfgBuilder.AddProperties(props)
+	inst.cfgBuilder.AddProperties2(nil, props)
 	inst.SetAttribute(key, module)
 
 	return inst
@@ -195,6 +195,7 @@ func (inst *innerInitializer) loadResourcesFromModules(mods []application.Module
 func (inst *innerInitializer) applyModules(mods []application.Module) error {
 	cb := inst.cfgBuilder
 	props := cb.DefaultProperties()
+
 	for index, mod := range mods {
 		vlog.Info("use module ", mod.GetName(), "@", mod.GetVersion())
 		err := mod.Apply(cb)
@@ -204,6 +205,7 @@ func (inst *innerInitializer) applyModules(mods []application.Module) error {
 		inst.writeModuleInfoToProperties(props, index, mod)
 		inst.tryLoadDefaultPropertiesFromRes(props, index, mod)
 	}
+
 	return nil
 }
 

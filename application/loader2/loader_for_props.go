@@ -144,6 +144,15 @@ func (inst *propertiesLoader) loadFromDefault() error {
 	return nil
 }
 
+func (inst *propertiesLoader) loadFromFinal() error {
+	cfg := inst.loading.config
+	ctx := inst.loading.context
+	src := cfg.GetFinalProperties()
+	dst := ctx.GetProperties()
+	dst.Import(src.Export(nil))
+	return nil
+}
+
 func (inst *propertiesLoader) load(loading *contextLoading) error {
 
 	inst.loading = loading
@@ -169,6 +178,11 @@ func (inst *propertiesLoader) load(loading *contextLoading) error {
 	}
 
 	err = inst.loadFromFile()
+	if err != nil {
+		return err
+	}
+
+	err = inst.loadFromFinal()
 	if err != nil {
 		return err
 	}

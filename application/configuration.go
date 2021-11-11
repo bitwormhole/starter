@@ -13,6 +13,7 @@ type Configuration interface {
 	GetAttributes() collection.Attributes
 	GetEnvironment() collection.Environment
 	GetDefaultProperties() collection.Properties
+	GetFinalProperties() collection.Properties
 	GetErrorHandler() lang.ErrorHandler
 	IsEnableLoadPropertiesFromArguments() bool
 }
@@ -27,6 +28,7 @@ type ConfigBuilder interface {
 	AddComponent(info ComponentInfo)
 	AddResources(res collection.Resources)
 	AddProperties(p collection.Properties)
+	AddProperties2(theDefault, theFinal collection.Properties)
 
 	SetResources(res collection.Resources)
 	SetAttribute(name string, value interface{})
@@ -37,6 +39,7 @@ type ConfigBuilder interface {
 	IsEnableLoadPropertiesFromArguments() bool
 
 	DefaultProperties() collection.Properties
+	FinalProperties() collection.Properties
 
 	Create() Configuration
 }
