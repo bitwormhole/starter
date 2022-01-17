@@ -7,6 +7,7 @@ package gen
 import (
 	application "github.com/bitwormhole/starter/application"
 	config "github.com/bitwormhole/starter/application/config"
+	bootstrap0x1b594d "github.com/bitwormhole/starter/bootstrap"
 	lang "github.com/bitwormhole/starter/lang"
 	util "github.com/bitwormhole/starter/util"
 	configenchecker0xe7a472 "github.com/bitwormhole/starter/util/configenchecker"
@@ -15,14 +16,31 @@ import (
     
 )
 
+
+func nop(x ... interface{}){
+	util.Int64ToTime(0)
+	lang.CreateReleasePool()
+}
+
+
 func autoGenConfig(cb application.ConfigBuilder) error {
 
 	var err error = nil
 	cominfobuilder := config.ComInfo()
+	nop(err,cominfobuilder)
 
-	// component: com0-configenchecker.ConfigenChecker
+	// component: main-looper
 	cominfobuilder.Next()
-	cominfobuilder.ID("com0-configenchecker.ConfigenChecker").Class("").Aliases("").Scope("")
+	cominfobuilder.ID("main-looper").Class("").Aliases("").Scope("")
+	cominfobuilder.Factory((&comFactory4pComBoot{}).init())
+	err = cominfobuilder.CreateTo(cb)
+	if err != nil {
+		return err
+	}
+
+	// component: com1-configenchecker.ConfigenChecker
+	cominfobuilder.Next()
+	cominfobuilder.ID("com1-configenchecker.ConfigenChecker").Class("").Aliases("").Scope("")
 	cominfobuilder.Factory((&comFactory4theConfigenChecker{}).init())
 	err = cominfobuilder.CreateTo(cb)
 	if err != nil {
@@ -117,7 +135,87 @@ func autoGenConfig(cb application.ConfigBuilder) error {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// comFactory4theConfigenChecker : the factory of component: com0-configenchecker.ConfigenChecker
+// comFactory4pComBoot : the factory of component: main-looper
+type comFactory4pComBoot struct {
+
+    mPrototype * bootstrap0x1b594d.Boot
+
+	
+	mLivesSelector config.InjectionSelector
+	mConcurrentSelector config.InjectionSelector
+
+}
+
+func (inst * comFactory4pComBoot) init() application.ComponentFactory {
+
+	
+	inst.mLivesSelector = config.NewInjectionSelector(".life",nil)
+	inst.mConcurrentSelector = config.NewInjectionSelector("${application.loopers.concurrent}",nil)
+
+
+	inst.mPrototype = inst.newObject()
+    return inst
+}
+
+func (inst * comFactory4pComBoot) newObject() * bootstrap0x1b594d.Boot {
+	return & bootstrap0x1b594d.Boot {}
+}
+
+func (inst * comFactory4pComBoot) castObject(instance application.ComponentInstance) * bootstrap0x1b594d.Boot {
+	return instance.Get().(*bootstrap0x1b594d.Boot)
+}
+
+func (inst * comFactory4pComBoot) GetPrototype() lang.Object {
+	return inst.mPrototype
+}
+
+func (inst * comFactory4pComBoot) NewInstance() application.ComponentInstance {
+	return config.SimpleInstance(inst, inst.newObject())
+}
+
+func (inst * comFactory4pComBoot) AfterService() application.ComponentAfterService {
+	return inst
+}
+
+func (inst * comFactory4pComBoot) Init(instance application.ComponentInstance) error {
+	return nil
+}
+
+func (inst * comFactory4pComBoot) Destroy(instance application.ComponentInstance) error {
+	return nil
+}
+
+func (inst * comFactory4pComBoot) Inject(instance application.ComponentInstance, context application.InstanceContext) error {
+	
+	obj := inst.castObject(instance)
+	obj.Lives = inst.getterForFieldLivesSelector(context)
+	obj.Concurrent = inst.getterForFieldConcurrentSelector(context)
+	return context.LastError()
+}
+
+//getterForFieldLivesSelector
+func (inst * comFactory4pComBoot) getterForFieldLivesSelector (context application.InstanceContext) []lang.Object {
+	list1 := inst.mLivesSelector.GetList(context)
+	list2 := make([]lang.Object, 0, len(list1))
+	for _, item1 := range list1 {
+		item2, ok := item1.(lang.Object)
+		if ok {
+			list2 = append(list2, item2)
+		}
+	}
+	return list2
+}
+
+//getterForFieldConcurrentSelector
+func (inst * comFactory4pComBoot) getterForFieldConcurrentSelector (context application.InstanceContext) bool {
+    return inst.mConcurrentSelector.GetBool(context)
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+// comFactory4theConfigenChecker : the factory of component: com1-configenchecker.ConfigenChecker
 type comFactory4theConfigenChecker struct {
 
     mPrototype * configenchecker0xe7a472.ConfigenChecker
