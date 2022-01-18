@@ -19,7 +19,7 @@ type LifeRegistry interface {
 
 // LifeRegistration 表示 Life 的注册项
 type LifeRegistration struct {
-	Priority int
+	Priority int // 数值越大，优先级越高，优先执行OnInit & OnStart
 
 	OnInit    OnLifeFunc
 	OnStart   OnLifeFunc
@@ -52,7 +52,7 @@ func (inst *LifeRegistrationSorter) Len() int {
 
 func (inst *LifeRegistrationSorter) Less(a, b int) bool {
 	list := inst.List
-	return list[a].Priority < list[b].Priority
+	return list[a].Priority > list[b].Priority
 }
 
 func (inst *LifeRegistrationSorter) Swap(a, b int) {
