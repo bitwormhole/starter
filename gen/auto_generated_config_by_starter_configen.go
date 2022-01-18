@@ -194,11 +194,11 @@ func (inst * comFactory4pComBoot) Inject(instance application.ComponentInstance,
 }
 
 //getterForFieldLivesSelector
-func (inst * comFactory4pComBoot) getterForFieldLivesSelector (context application.InstanceContext) []lang.Object {
+func (inst * comFactory4pComBoot) getterForFieldLivesSelector (context application.InstanceContext) []application.LifeRegistry {
 	list1 := inst.mLivesSelector.GetList(context)
-	list2 := make([]lang.Object, 0, len(list1))
+	list2 := make([]application.LifeRegistry, 0, len(list1))
 	for _, item1 := range list1 {
-		item2, ok := item1.(lang.Object)
+		item2, ok := item1.(application.LifeRegistry)
 		if ok {
 			list2 = append(list2, item2)
 		}

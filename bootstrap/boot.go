@@ -1,10 +1,10 @@
 package bootstrap
 
 import (
+	"sort"
 	"time"
 
 	"github.com/bitwormhole/starter/application"
-	"github.com/bitwormhole/starter/lang"
 	"github.com/bitwormhole/starter/markup"
 	"github.com/bitwormhole/starter/vlog"
 )
@@ -13,8 +13,8 @@ import (
 type Boot struct {
 	markup.Component `id:"main-looper"`
 
-	Lives      []lang.Object `inject:".life"`
-	Concurrent bool          `inject:"${application.loopers.concurrent}"`
+	Lives      []application.LifeRegistry `inject:".life"`
+	Concurrent bool                       `inject:"${application.loopers.concurrent}"`
 
 	proxies []*lifeProxy
 }
@@ -23,39 +23,95 @@ func (inst *Boot) _Impl() application.MainLooper {
 	return inst
 }
 
+func (inst *Boot) logError(e error) {
+	if e == nil {
+		return
+	}
+	vlog.Error(e)
+}
+
 // RunMain ...
 func (inst *Boot) RunMain() error {
-	err := inst.load()
+	err := inst.prepare()
 	if err != nil {
 		return err
 	}
-	err = inst.start()
-	if err != nil {
-		vlog.Error(err)
-	} else {
-		err = inst.loop()
-		if err != nil {
-			vlog.Error(err)
-		}
-	}
-	return inst.stop()
+	return inst.run2()
 }
 
-func (inst *Boot) load() error {
+func (inst *Boot) run2() error {
+	err := inst.doInit()
+	defer func() {
+		e2 := inst.doDestroy()
+		inst.logError(e2)
+	}()
+	if err != nil {
+		return err
+	}
+	return inst.run3()
+}
+
+func (inst *Boot) run3() error {
+	err := inst.doStart()
+	defer func() {
+		e2 := inst.doStop()
+		inst.logError(e2)
+	}()
+	if err != nil {
+		return err
+	}
+	return inst.run4()
+}
+
+func (inst *Boot) run4() error {
+	defer func() {
+		e := recover()
+		if e != nil {
+			vlog.Error(e)
+		}
+	}()
+	return inst.doLoop()
+}
+
+func (inst *Boot) prepare() error {
+
 	src := inst.Lives
 	dst := make([]*lifeProxy, 0)
+	mid := make([]*application.LifeRegistration, 0)
+
 	for _, item := range src {
-		proxy := &lifeProxy{parent: inst}
-		cnt := proxy.load(item)
-		if cnt > 0 {
-			dst = append(dst, proxy)
+		lr := item.GetLifeRegistration()
+		if lr == nil {
+			continue
 		}
+		mid = append(mid, lr)
 	}
+
+	sort.Sort(&application.LifeRegistrationSorter{List: mid})
+
+	for _, item := range mid {
+		proxy := &lifeProxy{parent: inst}
+		proxy.prepare(item)
+		dst = append(dst, proxy)
+	}
+
 	inst.proxies = dst
 	return nil
 }
 
-func (inst *Boot) start() error {
+func (inst *Boot) doInit() error {
+	all := inst.proxies
+	for _, item := range all {
+		err := item.init()
+		if err != nil {
+			return err
+		}
+		item.initialled = true
+	}
+	return nil
+}
+
+func (inst *Boot) doStart() error {
 	all := inst.proxies
 	for _, item := range all {
 		err := item.start()
@@ -67,23 +123,37 @@ func (inst *Boot) start() error {
 	return nil
 }
 
-func (inst *Boot) listLoopers() []application.Looper {
-	src := inst.proxies
-	dst := make([]application.Looper, 0)
-	for _, item := range src {
-		looper := item.mLooper.Looper
-		if looper != nil {
-			dst = append(dst, looper)
-		}
-	}
-	return dst
-}
-
-func (inst *Boot) loop() error {
+func (inst *Boot) doLoop() error {
 	if inst.Concurrent {
 		return inst.loopAsConcurrent()
 	}
 	return inst.loopAsSerial()
+}
+
+func (inst *Boot) doStop() error {
+	all := inst.proxies
+	i := len(all) - 1
+	for ; i >= 0; i-- {
+		item := all[i]
+		err := item.stop()
+		if err != nil {
+			vlog.Error(err)
+		}
+	}
+	return nil
+}
+
+func (inst *Boot) doDestroy() error {
+	all := inst.proxies
+	i := len(all) - 1
+	for ; i >= 0; i-- {
+		item := all[i]
+		err := item.destroy()
+		if err != nil {
+			vlog.Error(err)
+		}
+	}
+	return nil
 }
 
 func (inst *Boot) loopAsSerial() error {
@@ -101,107 +171,123 @@ func (inst *Boot) loopAsConcurrent() error {
 	all := inst.listLoopers()
 	runner := concurrentLooperRunner{}
 	for _, item := range all {
-		runner.start(item)
+		runner.startLooper(item)
 	}
 	return runner.waitForAllDone()
 }
 
-func (inst *Boot) stop() error {
-	all := inst.proxies
-	i := len(all)
-	for i--; i >= 0; i-- {
-		item := all[i]
-		err := item.stop()
-		if err != nil {
-			vlog.Error(err)
+func (inst *Boot) listLoopers() []application.Looper {
+	src := inst.proxies
+	dst := make([]application.Looper, 0)
+	for _, item := range src {
+		looper := item.Looper
+		if looper != nil {
+			dst = append(dst, looper)
 		}
 	}
-	return nil
+	return dst
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 type lifeProxy struct {
-	parent   *Boot
-	mStarter application.StarterRegistration
-	mLooper  application.LooperRegistration
-	mStopper application.StopperRegistration
-	started  bool
+	application.LifeRegistration
+
+	parent *Boot
+
+	initialled bool
+	started    bool
 }
 
-func (inst *lifeProxy) load(o lang.Object) int {
-
-	count := 0
-
-	o1, ok := o.(application.StarterRegistry)
-	if ok {
-		inst.mStarter = *o1.GetStarterRegistration()
-		count++
+func (inst *lifeProxy) prepare(o *application.LifeRegistration) {
+	if o == nil {
+		return
 	}
+	inst.LifeRegistration = *o
+}
 
-	o2, ok := o.(application.LooperRegistry)
-	if ok {
-		inst.mLooper = *o2.GetLooperRegistration()
-		count++
+func (inst *lifeProxy) init() error {
+	fn := inst.OnInit
+	if fn == nil {
+		return nil
 	}
-
-	o3, ok := o.(application.StopperRegistry)
-	if ok {
-		inst.mStopper = *o3.GetStopperRegistration()
-		count++
-	}
-
-	return count
+	return fn()
 }
 
 func (inst *lifeProxy) start() error {
-	target := inst.mStarter.Starter
-	if target != nil {
-		err := target.Start()
-		if err != nil {
-			return err
-		}
+	fn := inst.OnStart
+	if fn == nil {
+		return nil
 	}
-	inst.started = true
-	return nil
+	return fn()
 }
 
 func (inst *lifeProxy) loop() error {
-
 	if !inst.started {
 		return nil
 	}
-
-	target := inst.mLooper.Looper
-	if target == nil {
+	looper := inst.Looper
+	if looper == nil {
 		return nil
 	}
-	return target.Loop()
+	return looper.Loop()
 }
 
 func (inst *lifeProxy) stop() error {
-
 	if !inst.started {
 		return nil
 	}
-
-	target := inst.mStopper.Stopper
-	if target == nil {
+	fn := inst.OnStop
+	if fn == nil {
 		return nil
 	}
-	return target.Stop()
+	return fn()
+}
+
+func (inst *lifeProxy) destroy() error {
+	if !inst.initialled {
+		return nil
+	}
+	fn := inst.OnDestroy
+	if fn == nil {
+		return nil
+	}
+	return fn()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 type concurrentLooperRunner struct {
-	countBegin int
-	countEnd   int
+	all []*concurrentLooperHolder
+}
+
+func (inst *concurrentLooperRunner) startLooper(l application.Looper) {
+	if l == nil {
+		return
+	}
+	h := &concurrentLooperHolder{}
+	h.parent = inst
+	h.looper = l
+	inst.all = append(inst.all, h)
+	h.start()
+}
+
+func (inst *concurrentLooperRunner) isAllDone() bool {
+	all := inst.all
+	if all == nil {
+		return true
+	}
+	for _, item := range all {
+		if !item.stopped {
+			return false
+		}
+	}
+	return true
 }
 
 func (inst *concurrentLooperRunner) waitForAllDone() error {
 	for {
-		if inst.countEnd < inst.countBegin {
+		if !inst.isAllDone() {
 			time.Sleep(time.Second * 2)
 		} else {
 			break
@@ -210,33 +296,42 @@ func (inst *concurrentLooperRunner) waitForAllDone() error {
 	return nil
 }
 
-func (inst *concurrentLooperRunner) start(looper application.Looper) {
+////////////////////
+
+type concurrentLooperHolder struct {
+	parent  *concurrentLooperRunner
+	started bool
+	stopped bool
+	looper  application.Looper
+}
+
+func (inst *concurrentLooperHolder) Loop() error {
+	return nil // NOP
+}
+
+func (inst *concurrentLooperHolder) start() {
+	looper := inst.looper
 	if looper == nil {
-		return
+		looper = inst // set as NOP
 	}
-	inst.countBegin++
 	go func() {
 		inst.run(looper)
 	}()
 }
 
-func (inst *concurrentLooperRunner) run(looper application.Looper) {
+func (inst *concurrentLooperHolder) run(looper application.Looper) {
 	defer func() {
 		e := recover()
 		if e != nil {
 			vlog.Error(e)
 		}
 	}()
+	inst.started = true
 	defer func() {
-		inst.incEnd()
+		inst.stopped = true
 	}()
 	err := looper.Loop()
 	if err != nil {
 		vlog.Error(err)
 	}
-}
-
-func (inst *concurrentLooperRunner) incEnd() {
-	// TODO:  mutex ...
-	inst.countEnd++
 }

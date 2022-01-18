@@ -4,15 +4,15 @@
 package gen
 
 import (
+	application0x67f6c5 "github.com/bitwormhole/starter/application"
 	bootstrap0x1b594d "github.com/bitwormhole/starter/bootstrap"
-	lang0xbf4f1f "github.com/bitwormhole/starter/lang"
 	markup0x23084a "github.com/bitwormhole/starter/markup"
 )
 
 type pComBoot struct {
 	instance *bootstrap0x1b594d.Boot
 	 markup0x23084a.Component `id:"main-looper"`
-	Lives []lang0xbf4f1f.Object `inject:".life"`
+	Lives []application0x67f6c5.LifeRegistry `inject:".life"`
 	Concurrent bool `inject:"${application.loopers.concurrent}"`
 }
 
