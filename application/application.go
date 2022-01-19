@@ -72,3 +72,9 @@ func RunAndLoop(config Configuration) (int, error) {
 
 	return code, nil
 }
+
+// Shutdown 关闭应用
+func Shutdown(ctx Context) error {
+	ml := GetMainLooper(ctx)
+	return ml.Shutdown()
+}

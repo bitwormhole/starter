@@ -14,6 +14,7 @@ type Boot struct {
 	markup.Component `id:"main-looper"`
 
 	Lives      []application.LifeRegistry `inject:".life"`
+	Killers    []application.Killer       `inject:".killer"`
 	Concurrent bool                       `inject:"${application.loopers.concurrent}"`
 
 	proxies []*lifeProxy
@@ -28,6 +29,18 @@ func (inst *Boot) logError(e error) {
 		return
 	}
 	vlog.Error(e)
+}
+
+// Shutdown ...
+func (inst *Boot) Shutdown() error {
+	all := inst.Killers
+	for _, k := range all {
+		err := k.Shutdown()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // RunMain ...

@@ -31,6 +31,11 @@ type LifeRegistration struct {
 // Life 是 LifeRegistration 的别名
 type Life LifeRegistration
 
+// Killer 接口用于通知应用程序关闭,  【inject:".killer"】
+type Killer interface {
+	Shutdown() error
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 // LifeRegistrationSorter 是 LifeRegistration 的排序器

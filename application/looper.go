@@ -11,6 +11,7 @@ type Looper interface {
 
 // MainLooper 【inject:"#main-looper"】
 type MainLooper interface {
+	Killer
 	RunMain() error
 }
 
@@ -24,6 +25,17 @@ func runMainLooper(c Context) error {
 	}
 	o2 := o1.(MainLooper)
 	return o2.RunMain()
+}
+
+// GetMainLooper 取主循环对象
+func GetMainLooper(c Context) MainLooper {
+	const selector = "#main-looper"
+	o1, err := c.GetComponent(selector)
+	if err != nil {
+		panic(err)
+	}
+	o2 := o1.(MainLooper)
+	return o2
 }
 
 ////////////////////////////////////////////////////////////////////////////////
