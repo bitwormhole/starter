@@ -42,3 +42,27 @@ func TestInt64ToTime(t *testing.T) {
 		// os.Stdout.WriteString("TestInt64ToTime: " + t1.String() + "\n")
 	}
 }
+
+func TestTimeStamp(t *testing.T) {
+
+	t1 := Now()
+
+	tt := t1.GetTime()
+	i1 := t1.Int64()
+	s1 := t1.String()
+
+	t.Log("tt = ", tt)
+	t.Log("i1 = ", i1)
+	t.Log("s1 = ", s1)
+}
+
+func BenchmarkNow(b *testing.B) {
+	b.Log("begin")
+	i := b.N
+	list := []Time{}
+	for ; i > 0; i-- {
+		ts := Now()
+		list = append(list, ts)
+	}
+	b.Log("done")
+}

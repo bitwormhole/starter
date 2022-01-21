@@ -27,3 +27,45 @@ func Int64ToTime(ms int64) time.Time {
 	ns := (ms % theMsPerSec) * theNsPerMs
 	return time.Unix(sec, ns)
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Time 用 int64 表示的时间戳，类似java里面的 long System.currentTimeMillis()
+type Time int64
+
+// String 转为字符串
+func (t Time) String() string {
+	t2 := t.Int64()
+	t3 := Int64ToTime(t2)
+	return t3.String()
+}
+
+// Int64 转为整形
+func (t Time) Int64() int64 {
+	return int64(t)
+}
+
+// GetTime 转为 time.Time
+func (t Time) GetTime() time.Time {
+	n := int64(t)
+	return Int64ToTime(n)
+}
+
+// NewTimeWithInt64 根据参数创建对应的时间戳
+func NewTimeWithInt64(n int64) Time {
+	return Time(n)
+}
+
+// NewTime 根据参数创建对应的时间戳
+func NewTime(t time.Time) Time {
+	n := TimeToInt64(t)
+	return Time(n)
+}
+
+// Now 根据参数创建对应的时间戳
+func Now() Time {
+	now := time.Now()
+	return NewTime(now)
+}
+
+////////////////////////////////////////////////////////////////////////////////
