@@ -13,6 +13,7 @@ const (
 type OnLifeFunc func() error
 
 // LifeRegistry 表示 Life 的注册者
+// 【inject:".life"】
 type LifeRegistry interface {
 	GetLifeRegistration() *LifeRegistration
 }
