@@ -2,6 +2,7 @@ package loader2
 
 import (
 	"errors"
+	"os"
 	"strings"
 
 	"github.com/bitwormhole/starter/collection"
@@ -144,6 +145,24 @@ func (inst *propertiesLoader) loadFromDefault() error {
 	return nil
 }
 
+func (inst *propertiesLoader) loadFromExeDir() error {
+
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+
+	exefile := fs.Default().GetPath(exe)
+	pfile := exefile.Parent().GetChild("application.properties")
+	if !pfile.IsFile() {
+		return nil
+	}
+
+	ctx := inst.loading.context
+	props := ctx.GetProperties()
+	return inst.loadFromFilePath(pfile.Path(), props)
+}
+
 func (inst *propertiesLoader) loadFromFinal() error {
 	cfg := inst.loading.config
 	ctx := inst.loading.context
@@ -178,6 +197,11 @@ func (inst *propertiesLoader) load(loading *contextLoading) error {
 	}
 
 	err = inst.loadFromFile()
+	if err != nil {
+		return err
+	}
+
+	err = inst.loadFromExeDir()
 	if err != nil {
 		return err
 	}
