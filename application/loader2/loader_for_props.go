@@ -33,8 +33,10 @@ type propertiesLoader struct {
 
 func (inst *propertiesLoader) Load(loading *contextLoading) (collection.Properties, error) {
 
+	args := loading.context.GetArguments().Export()
+
 	inst.mods = loading.modules
-	inst.args = loading.arguments
+	inst.args = args
 	inst.plist = nil
 	inst.cacheForMods = make(map[string]collection.Properties)
 	inst.profile = ""
