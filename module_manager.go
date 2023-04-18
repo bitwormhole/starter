@@ -81,6 +81,7 @@ func (inst *moduleManager) keyFor(mod application.Module) string {
 	return name + "#" + ver
 }
 
+// listAll 返回经过排序（根据依赖深度）的模块列表
 func (inst *moduleManager) listAll() []application.Module {
 	sorter := &moduleHolderSorter{}
 	sorter.init(inst.table)

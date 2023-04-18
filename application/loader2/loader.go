@@ -27,6 +27,7 @@ func (inst *loader) Load(cfg application.Configuration, args []string) (applicat
 type contextLoading struct {
 	context   application.Context
 	config    application.Configuration
+	modules   []application.Module
 	arguments []string
 	profile   string // the value of ${application.profiles.active}
 }
@@ -35,6 +36,7 @@ func (inst *contextLoading) init(cfg application.Configuration, args []string) {
 
 	ctx := &appContext{}
 
+	inst.modules = cfg.GetModules()
 	inst.arguments = args
 	inst.config = cfg
 	inst.context = ctx.init()
@@ -150,7 +152,14 @@ func (inst *contextLoading) loadEnvironment() error {
 
 func (inst *contextLoading) loadProperties() error {
 	loader := &propertiesLoader{}
-	return loader.load(inst)
+	p, err := loader.Load(inst)
+	if err != nil {
+		return err
+	}
+	dst := inst.context.GetProperties()
+	dst.Import(p.Export(nil))
+	inst.profile = loader.profile
+	return nil
 }
 
 func (inst *contextLoading) loadAttributes() error {

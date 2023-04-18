@@ -8,6 +8,7 @@ import (
 // Configuration 表示应用程序配置
 type Configuration interface {
 	GetLoader() ContextLoader
+	GetModules() []Module
 	GetComponents() []ComponentInfo
 	GetResources() collection.Resources
 	GetAttributes() collection.Attributes
@@ -29,6 +30,8 @@ type ConfigBuilder interface {
 	AddResources(res collection.Resources)
 	AddProperties(p collection.Properties)
 	AddProperties2(theDefault, theFinal collection.Properties)
+
+	SetModules(mods []Module)
 
 	SetResources(res collection.Resources)
 	SetAttribute(name string, value interface{})

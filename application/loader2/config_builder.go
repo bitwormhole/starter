@@ -17,6 +17,7 @@ func ConfigBuilder() application.ConfigBuilder {
 type configBuilderV2 struct {
 	hError     lang.ErrorHandler
 	components []application.ComponentInfo
+	modules    []application.Module
 
 	resources         collection.Resources
 	propertiesDefault collection.Properties
@@ -81,6 +82,10 @@ func (inst *configBuilderV2) AddResources(src collection.Resources) {
 	}
 	list := src.Export(nil)
 	dst.Import(list, true)
+}
+
+func (inst *configBuilderV2) SetModules(mods []application.Module) {
+	inst.modules = mods
 }
 
 func (inst *configBuilderV2) SetResources(res collection.Resources) {

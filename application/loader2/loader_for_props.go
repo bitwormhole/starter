@@ -1,32 +1,117 @@
 package loader2
 
 import (
-	"errors"
 	"os"
 	"strings"
 
+	"github.com/bitwormhole/starter/application"
 	"github.com/bitwormhole/starter/collection"
 	"github.com/bitwormhole/starter/io/fs"
 	"github.com/bitwormhole/starter/vlog"
+)
+
+const (
+	ProfileNameDefault = "[default]"
+	ProfileNameApp     = "[app]"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // 属性加载器
 type propertiesLoader struct {
-	loading *contextLoading
+
+	// cache
+	cacheForArgs   collection.Properties
+	cacheForExeDir collection.Properties
+	cacheForMods   map[string]collection.Properties
+
+	profile string
+	mods    []application.Module
+	args    []string
+	plist   []collection.Properties
+}
+
+func (inst *propertiesLoader) Load(loading *contextLoading) (collection.Properties, error) {
+
+	inst.mods = loading.modules
+	inst.args = loading.arguments
+	inst.plist = nil
+	inst.cacheForMods = make(map[string]collection.Properties)
+	inst.profile = ""
+
+	err := inst.applySteps()
+	if err != nil {
+		return nil, err
+	}
+
+	inst.profile = inst.computeProfileName()
+	inst.plist = nil
+
+	err = inst.applySteps()
+	if err != nil {
+		return nil, err
+	}
+
+	return inst.makeResult()
+}
+
+func (inst *propertiesLoader) makeResult() (collection.Properties, error) {
+	list := inst.plist
+	dst := collection.CreateProperties()
+	for _, src := range list {
+		table := src.Export(nil)
+		dst.Import(table)
+	}
+	return dst, nil
+}
+
+func (inst *propertiesLoader) applySteps() error {
+
+	steps := make([]func() error, 0)
+
+	steps = append(steps, inst.loadFromModules)
+	steps = append(steps, inst.loadFromExeDir)
+	steps = append(steps, inst.loadFromArgs)
+
+	for _, step := range steps {
+		err := step()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (inst *propertiesLoader) computeProfileName() string {
+	const key = "application.profiles.active"
+	list := inst.plist
+	value := ""
+	for _, p := range list {
+		value = p.GetProperty(key, value)
+	}
+	return value
 }
 
 func (inst *propertiesLoader) loadFromArgs() error {
-	ctx := inst.loading.context
-	args := ctx.GetArguments()
-	props := ctx.GetProperties()
-	list := args.Export()
-	for _, item := range list {
-		if !strings.HasPrefix(item, "--") {
+
+	// by cache
+	props := inst.cacheForArgs
+	if props != nil {
+		inst.plist = append(inst.plist, props)
+		return nil
+	}
+
+	// do load
+	const prefix = "--"
+	args := inst.args
+	props = collection.CreateProperties()
+
+	for _, item := range args {
+		if !strings.HasPrefix(item, prefix) {
 			continue
 		}
-		item = item[2:]
+		item = item[len(prefix):]
 		index := strings.Index(item, "=")
 		if index < 1 {
 			continue
@@ -35,182 +120,106 @@ func (inst *propertiesLoader) loadFromArgs() error {
 		val := strings.TrimSpace(item[index+1:])
 		props.SetProperty(key, val)
 	}
-	return nil
-}
 
-func (inst *propertiesLoader) loadFromRes(name string) error {
-	ctx := inst.loading.context
-	res := ctx.GetResources()
-	props := ctx.GetProperties()
-	text, err := res.GetText("/" + name)
-	if err != nil {
-		return nil
-	}
-	collection.ParseProperties(text, props)
-	inst.loadFromArgs()
-	return nil
-}
-
-func (inst *propertiesLoader) loadFromRes1() error {
-	return inst.loadFromRes("application.properties")
-}
-
-func (inst *propertiesLoader) loadFromRes2() error {
-	const key = "application.profiles.active"
-	ctx := inst.loading.context
-	profile := ctx.GetProperties().GetProperty(key, "default")
-	inst.loading.profile = profile
-	return inst.loadFromRes("application-" + profile + ".properties")
-}
-
-// 取指定的属性，并转为 bool 值
-func (inst *propertiesLoader) getBool(name string, p collection.Properties) bool {
-	if p == nil {
-		return false
-	}
-	text, err := p.GetPropertyRequired(name)
-	if err != nil {
-		return false
-	}
-	text = strings.TrimSpace(text)
-	text = strings.ToLower(text)
-	if text == "true" || text == "1" || text == "yes" {
-		return true
-	}
-	return false
-}
-
-// 从指定的文件加载属性，存入到dst
-func (inst *propertiesLoader) loadFromFilePath(path string, dst collection.Properties) error {
-
-	file := fs.Default().GetPath(path)
-
-	if !file.IsFile() {
-		return errors.New("the file is not exists, path=" + file.Path())
-	}
-
-	vlog.Info("load application.Properties from ", file.Path())
-	text, err := file.GetIO().ReadText(nil)
-
-	if err != nil {
-		return nil
-	}
-
-	_, err = collection.ParseProperties(text, dst)
-	return err
-}
-
-func (inst *propertiesLoader) loadFromFile() error {
-
-	const keyPath = "application.properties.file.path"
-	const keyEnabled = "application.properties.file.enabled"
-	const keyRequired = "application.properties.file.required"
-
-	ctx := inst.loading.context
-	props := ctx.GetProperties()
-
-	enabled := inst.getBool(keyEnabled, props)
-	required := inst.getBool(keyRequired, props)
-
-	if !enabled {
-		return nil
-	}
-
-	path, err := props.GetPropertyRequired(keyPath)
-	if err != nil {
-		if required {
-			return err
-		}
-		return nil
-	}
-
-	err = inst.loadFromFilePath(path, props)
-	if err != nil {
-		if required {
-			return err
-		}
-		return nil
-	}
-
-	inst.loadFromArgs()
-	return nil
-}
-
-func (inst *propertiesLoader) loadFromDefault() error {
-	cfg := inst.loading.config
-	ctx := inst.loading.context
-	src := cfg.GetDefaultProperties()
-	dst := ctx.GetProperties()
-	dst.Import(src.Export(nil))
+	inst.cacheForArgs = props
+	inst.plist = append(inst.plist, props)
 	return nil
 }
 
 func (inst *propertiesLoader) loadFromExeDir() error {
 
-	exe, err := os.Executable()
+	// by cache
+	props := inst.cacheForExeDir
+	if props != nil {
+		inst.plist = append(inst.plist, props)
+		return nil
+	}
+
+	// do load
+	exepath, err := os.Executable()
 	if err != nil {
 		return err
 	}
 
-	exefile := fs.Default().GetPath(exe)
+	exefile := fs.Default().GetPath(exepath)
 	pfile := exefile.Parent().GetChild("application.properties")
 	if !pfile.IsFile() {
 		return nil
 	}
 
-	ctx := inst.loading.context
-	props := ctx.GetProperties()
-	return inst.loadFromFilePath(pfile.Path(), props)
-}
+	text, err := pfile.GetIO().ReadText(nil)
+	props = collection.CreateProperties()
+	props, err = collection.ParseProperties(text, props)
+	if err != nil {
+		return err
+	}
 
-func (inst *propertiesLoader) loadFromFinal() error {
-	cfg := inst.loading.config
-	ctx := inst.loading.context
-	src := cfg.GetFinalProperties()
-	dst := ctx.GetProperties()
-	dst.Import(src.Export(nil))
+	inst.cacheForExeDir = props
+	inst.plist = append(inst.plist, props)
 	return nil
 }
 
-func (inst *propertiesLoader) load(loading *contextLoading) error {
+func (inst *propertiesLoader) loadFromModules() error {
+	profile := inst.profile
+	mods := inst.mods
+	for _, mod := range mods {
+		inst.tryLoadFromRes(ProfileNameDefault, mod)
+		inst.tryLoadFromRes(ProfileNameApp, mod)
+		inst.tryLoadFromRes(profile, mod)
+	}
+	return nil
+}
 
-	inst.loading = loading
+func (inst *propertiesLoader) tryLoadFromRes(profile string, mod application.Module) {
+	err := inst.doLoadFromRes(profile, mod)
+	if err != nil {
+		vlog.Warn(err)
+	}
+}
 
-	err := inst.loadFromDefault()
+func (inst *propertiesLoader) doLoadFromRes(profile string, mod application.Module) error {
+
+	url := ""
+	if profile == "" {
+		return nil // skip
+
+	} else if profile == ProfileNameApp {
+		url = "res:///application.properties"
+
+	} else if profile == ProfileNameDefault {
+		url = "res:///default.properties"
+
+	} else {
+		url = "res:///application-" + profile + ".properties"
+	}
+
+	// by cache
+	nameForCache := url + "?module=" + mod.GetName()
+	props := inst.cacheForMods[nameForCache]
+	if props != nil {
+		inst.plist = append(inst.plist, props)
+		return nil
+	}
+
+	// do load
+	res := mod.GetResources()
+	if res == nil {
+		return nil // skip
+	}
+
+	text, err := res.GetText(url)
 	if err != nil {
 		return err
 	}
 
-	err = inst.loadFromArgs()
+	props, err = collection.ParseProperties(text, nil)
 	if err != nil {
-		return err
+		return nil // err
 	}
 
-	err = inst.loadFromRes1()
-	if err != nil {
-		return err
-	}
-
-	err = inst.loadFromRes2()
-	if err != nil {
-		return err
-	}
-
-	err = inst.loadFromFile()
-	if err != nil {
-		return err
-	}
-
-	err = inst.loadFromExeDir()
-	if err != nil {
-		return err
-	}
-
-	err = inst.loadFromFinal()
-	if err != nil {
-		return err
-	}
-
+	// save
+	inst.cacheForMods[nameForCache] = props
+	inst.plist = append(inst.plist, props)
 	return nil
 }
 

@@ -48,7 +48,10 @@ func (inst *configuration) GetLoader() application.ContextLoader {
 
 func (inst *configuration) GetComponents() []application.ComponentInfo {
 	return inst.cb.components
+}
 
+func (inst *configuration) GetModules() []application.Module {
+	return inst.cb.modules
 }
 
 func (inst *configuration) GetResources() collection.Resources {

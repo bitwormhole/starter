@@ -209,28 +209,31 @@ func (inst *innerInitializer) applyModules(mods []application.Module) error {
 	return nil
 }
 
+// tryLoadDefaultPropertiesFromRes [已废弃] 用 application.properties 代替 default.properties
 func (inst *innerInitializer) tryLoadDefaultPropertiesFromRes(props collection.Properties, index int, mod application.Module) {
 
-	vlog.Trace("try load 'default.properties' from module: " + mod.GetName())
+	// vlog.Trace("try load 'default.properties' from module: " + mod.GetName())
 
-	r := mod.GetResources()
-	if r == nil {
-		return
-	}
+	// r := mod.GetResources()
+	// if r == nil {
+	// 	return
+	// }
 
-	text, err := r.GetText("default.properties")
-	if err != nil {
-		vlog.Warn(err, ", mod=", mod.GetName())
-		return
-	}
+	// text, err := r.GetText("default.properties")
+	// if err != nil {
+	// 	vlog.Warn(err, ", mod=", mod.GetName())
+	// 	return
+	// }
 
-	p, err := collection.ParseProperties(text, nil)
-	if err != nil {
-		vlog.Warn(err, ", mod=", mod.GetName())
-		return
-	}
+	// p, err := collection.ParseProperties(text, nil)
+	// if err != nil {
+	// 	vlog.Warn(err, ", mod=", mod.GetName())
+	// 	return
+	// }
 
-	props.Import(p.Export(nil))
+	// props.Import(p.Export(nil))
+
+	return
 }
 
 func (inst *innerInitializer) writeModuleInfoToProperties(props collection.Properties, index int, mod application.Module) {
@@ -282,6 +285,7 @@ func (inst *innerInitializer) prepareConfig() (application.Configuration, error)
 		return nil, err
 	}
 
+	inst.cfgBuilder.SetModules(mods)
 	cfg := inst.cfgBuilder.Create()
 	return cfg, nil
 }
