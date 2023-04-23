@@ -21,9 +21,11 @@ const (
 type propertiesLoader struct {
 
 	// cache
-	cacheForArgs   collection.Properties
-	cacheForExeDir collection.Properties
-	cacheForMods   map[string]collection.Properties
+	cacheForArgs    collection.Properties
+	cacheForDefault collection.Properties
+	cacheForFinal   collection.Properties
+	cacheForExeDir  collection.Properties
+	cacheForMods    map[string]collection.Properties
 
 	profile string
 	mods    []application.Module
@@ -34,7 +36,11 @@ type propertiesLoader struct {
 func (inst *propertiesLoader) Load(loading *contextLoading) (collection.Properties, error) {
 
 	args := loading.context.GetArguments().Export()
+	pDefault := loading.config.GetDefaultProperties()
+	pFinal := loading.config.GetFinalProperties()
 
+	inst.cacheForDefault = pDefault
+	inst.cacheForFinal = pFinal
 	inst.mods = loading.modules
 	inst.args = args
 	inst.plist = nil
@@ -71,9 +77,11 @@ func (inst *propertiesLoader) applySteps() error {
 
 	steps := make([]func() error, 0)
 
+	steps = append(steps, inst.loadFromDefault)
 	steps = append(steps, inst.loadFromModules)
 	steps = append(steps, inst.loadFromExeDir)
 	steps = append(steps, inst.loadFromArgs)
+	steps = append(steps, inst.loadFromFinal)
 
 	for _, step := range steps {
 		err := step()
@@ -93,6 +101,18 @@ func (inst *propertiesLoader) computeProfileName() string {
 		value = p.GetProperty(key, value)
 	}
 	return value
+}
+
+func (inst *propertiesLoader) loadFromDefault() error {
+	props := inst.cacheForDefault
+	inst.plist = append(inst.plist, props)
+	return nil
+}
+
+func (inst *propertiesLoader) loadFromFinal() error {
+	props := inst.cacheForFinal
+	inst.plist = append(inst.plist, props)
+	return nil
 }
 
 func (inst *propertiesLoader) loadFromArgs() error {
@@ -175,7 +195,7 @@ func (inst *propertiesLoader) loadFromModules() error {
 func (inst *propertiesLoader) tryLoadFromRes(profile string, mod application.Module) {
 	err := inst.doLoadFromRes(profile, mod)
 	if err != nil {
-		vlog.Warn(err)
+		vlog.Debug("warn:" + err.Error())
 	}
 }
 
